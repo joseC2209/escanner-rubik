@@ -1,0 +1,4 @@
+Proyecto: TFG de Ingeniería del Software. Aplicación móvil para el escaneo y resolución interactiva del Cubo de Rubik (2x2x2 inicial, arquitectura escalable).
+Stack Tecnológico: C++ (lógica matemática y visión), OpenCV (procesamiento de imagen HSV/Canny), Godot Engine 4 (interfaz móvil y simulador 3D), y CMake (sistema de compilación).
+Arquitectura: El núcleo de C++ se compila como una librería dinámica que se conecta a Godot mediante GDExtension.
+Estado actual: Repositorio inicializado con la plantilla godot-cpp-template usando CMake. Buscando crear el primer puente "Hola Mundo" entre C++ y GDScript.
