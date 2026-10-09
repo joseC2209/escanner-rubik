@@ -10,6 +10,9 @@ set(GODOT_PROJECT_DIR "project" CACHE STRING "The directory of a Godot project f
 
 # Make sure all the dependencies are satisfied
 find_package(Python3 3.4 REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "C:/msys64/ucrt64")
+find_package(OpenCV REQUIRED COMPONENTS core imgproc videoio)
+find_package(OpenCV REQUIRED)
 find_program(GIT git REQUIRED)
 
 # Ensure godot-cpp submodule has been updated
@@ -51,6 +54,7 @@ project(godot-cpp-template
 )
 
 add_library(${LIBNAME} SHARED)
+target_link_options(${LIBNAME} PRIVATE -static-libgcc -static-libstdc++)
 
 target_sources(${LIBNAME}
     PRIVATE
@@ -71,21 +75,30 @@ if(DOC_XML)
 endif()
 
 target_link_libraries(${LIBNAME} PRIVATE godot-cpp)
+target_link_libraries(${LIBNAME} PRIVATE godot-cpp ${OpenCV_LIBS})
 
 # Require at least C++17 for this target
 set_property(TARGET ${LIBNAME} PROPERTY CXX_STANDARD 17)
 
+set(GODOT_PROJECT_BINARY_DIR "${PROJECT_SOURCE_DIR}/${GODOT_PROJECT_DIR}/bin/${GODOTCPP_PLATFORM}")
+
 set_target_properties(${LIBNAME}
     PROPERTIES
     # The generator expression here prevents msvc from adding a Debug or Release subdir.
-    RUNTIME_OUTPUT_DIRECTORY "$<1:${PROJECT_SOURCE_DIR}/bin/${GODOTCPP_PLATFORM}>"
+    RUNTIME_OUTPUT_DIRECTORY "$<1:${GODOT_PROJECT_BINARY_DIR}>"
 
     PREFIX ""
     OUTPUT_NAME "${LIBNAME}${GODOTCPP_SUFFIX}"
 )
 
-set(GODOT_PROJECT_BINARY_DIR "${PROJECT_SOURCE_DIR}/${GODOT_PROJECT_DIR}/bin/${GODOTCPP_PLATFORM}")
+# Godot loads extension dependencies from the extension directory.
+set(MSYS2_BIN_DIR "C:/msys64/ucrt64/bin")
 
-add_custom_command(TARGET ${LIBNAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${LIBNAME}>" "${GODOT_PROJECT_BINARY_DIR}/$<TARGET_FILE_NAME:${LIBNAME}>"
-)
+if(EXISTS "${MSYS2_BIN_DIR}")
+    add_custom_command(TARGET ${LIBNAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            "-DMSYS2_BIN_DIR=${MSYS2_BIN_DIR}"
+            "-DDEST_DIR=${GODOT_PROJECT_BINARY_DIR}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/copy_runtime_dlls.cmake"
+    )
+endif()

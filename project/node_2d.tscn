@@ -4,3 +4,7 @@
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_wtcfe")
+
+[node name="CameraScreen" type="TextureRect" parent="."]
+expand_mode = 1
+stretch_mode = 6
