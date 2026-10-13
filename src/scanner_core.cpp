@@ -9,6 +9,7 @@ namespace godot{
         ClassDB::bind_method(D_METHOD("test_connection"), &ScannerCore::test_connection);
         ClassDB::bind_method(D_METHOD("open_camera"), &ScannerCore::open_camera);
         ClassDB::bind_method(D_METHOD("get_frame"), &ScannerCore::get_frame);
+        ClassDB::bind_method(D_METHOD("analyze_colors", "grid_rects"), &ScannerCore::analyze_colors);
     }
 
     ScannerCore::ScannerCore(){}
@@ -48,6 +49,11 @@ namespace godot{
     Ref<Image> ScannerCore::get_frame(){
         if(!cap.isOpened()) return Ref<Image>();
 
+        // Se guarda el frame para que analyze_colors pueda acceder a él
+        cap >> current_frame;
+
+        if(current_frame.empty()) return Ref<Image>();
+
         cv::Mat frame;
         cap >> frame; // Se extrae el fotograma actual de la webcam
 
@@ -67,6 +73,38 @@ namespace godot{
         // Creamos la imagen con las dimensiones y el formato RGB del frame
         Ref<Image> img = Image::create_from_data(frame_rgb.cols, frame_rgb.rows, false, Image::FORMAT_RGB8, byte_array);
         return img;
+    }
+
+    Array ScannerCore::analyze_colors(Array grid_rects){
+        Array result_colors;
+
+        if(current_frame.empty()){
+            return result_colors;
+        }
+
+        for(int i = 0; i < grid_rects.size(); i++){
+            Rect2 godot_rect = grid_rects[i];
+
+            // Se convierte Rect2 de Godot a cv::Rect de OpenCV
+            cv::Rect cv_rect(godot_rect.position.x, godot_rect.position.y, godot_rect.size.width, godot_rect.size.height);
+
+            // Se asegura que el recorte no se salga de los límites de la cámara
+            cv_rect &= cv::Rect(0, 0, current_frame.cols, current_frame.rows);
+
+            if(cv_rect.area() > 0){
+                // Se recorta el cuadradito
+                cv::Mat roi = current_frame(cv_rect);
+
+                // Se calcula el color promedio (BGR ya que es lo que usa OpenCV por defecto)
+                cv::Scalar avg_color = cv::mean(roi);
+
+                // Se convierte BGR a RGB para que Godot lo comprenda
+                Color godot_color(avg_color[2] / 255.0, avg_color[1] / 255.0, avg_color[0] / 255.0);
+                result_colors.push_back(godot_color);
+            }
+        }
+
+        return result_colors;
     }
 
 }
