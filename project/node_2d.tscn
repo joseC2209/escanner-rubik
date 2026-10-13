@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://mo5b3mikuc38"]
+[gd_scene load_steps=3 format=3 uid="uid://mo5b3mikuc38"]
 
 [ext_resource type="Script" uid="uid://bq343vf744845" path="res://node_2d.gd" id="1_wtcfe"]
+[ext_resource type="Script" uid="uid://bljtu4raaekd1" path="res://grid_overlay.gd" id="2_0e48y"]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_wtcfe")
@@ -8,3 +9,14 @@ script = ExtResource("1_wtcfe")
 [node name="CameraScreen" type="TextureRect" parent="."]
 expand_mode = 1
 stretch_mode = 6
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GridOverlay" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_0e48y")
