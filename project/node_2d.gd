@@ -8,6 +8,23 @@ var scanner : ScannerCore
 # Sprite que muestra la imagen capturada dentro del juego
 var camera_sprite: Sprite2D
 
+# Variables para la interfaz y estado del cubo
+@onready var face_label = $CanvasLayer/FaceLabel
+@onready var capture_button = $CanvasLayer/CaptureButton
+
+var captured_faces : Array = []
+var current_scanned_colors : Array = []
+
+# Orden estándar de la captura de las cara, asumiendo BLANCO arriba y VERDE al frente
+var faces_names = [
+	"SUPERIOR (Blanca)",
+	"FRONTAL (Verde)",
+	"DERECHA (Roja)",
+	"TRASERA (Azul)",
+	"IZQUIERDA (Naranja)",
+	"INFERIOR (Amarilla)"
+]
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# Se inicializa ScannerCore y se añade
@@ -24,6 +41,8 @@ func _ready() -> void:
 	camera_sprite.position = get_viewport_rect().size / 2.0
 	camera_sprite.z_index = 10
 	add_child(camera_sprite)
+	
+	update_ui_text()
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -68,7 +87,24 @@ func _process(delta: float) -> void:
 				scaled_rects.append(Rect2(scaled_x, scaled_y, scaled_w, scaled_h))
 				
 			# Se envía a C++ para analizar los colores
-			var colors = scanner.analyze_colors(scaled_rects)
+			current_scanned_colors = scanner.analyze_colors(scaled_rects)
 			
 			# Se envían los colores detectados a la interfaz para que los pinte
-			$CanvasLayer/GridOverlay.update_detected_colors(colors)
+			$CanvasLayer/GridOverlay.update_detected_colors(current_scanned_colors)
+
+# Se actualiza el texto superior según la cara que estemos escaneando
+func update_ui_text():
+	if captured_faces.size() < 6:
+		face_label.text = "Escanea la cara: " + faces_names[captured_faces.size()]
+	else:
+		face_label.text = "¡Cubo completado!"
+		capture_button.disabled = true
+		print("ESTADO FINAL DEL CUBO: ", captured_faces)
+
+func _on_capture_button_pressed() -> void:
+	# Se asegura de que haya leído 4 colores y no se haya capturado nada vacío
+	if current_scanned_colors.size() == 4 and captured_faces.size() < 6:
+		# Se guarda una copia del array
+		captured_faces.append(current_scanned_colors.duplicate())
+		print("Cara guardada: ", current_scanned_colors)
+		update_ui_text()
