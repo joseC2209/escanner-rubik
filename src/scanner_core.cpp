@@ -96,11 +96,39 @@ namespace godot{
                 cv::Mat roi = current_frame(cv_rect);
 
                 // Se calcula el color promedio (BGR ya que es lo que usa OpenCV por defecto)
-                cv::Scalar avg_color = cv::mean(roi);
+                cv::Scalar avg_bgr = cv::mean(roi);
 
-                // Se convierte BGR a RGB para que Godot lo comprenda
-                Color godot_color(avg_color[2] / 255.0, avg_color[1] / 255.0, avg_color[0] / 255.0);
-                result_colors.push_back(godot_color);
+                // Se convierte el color promedio a HSV
+                cv::Mat3b bgr_pixel(cv::Vec3b(avg_bgr[0], avg_bgr[1], avg_bgr[2]));
+                cv::Mat3b hsv_pixel;
+                cv::cvtColor(bgr_pixel, hsv_pixel, cv::COLOR_BGR2HSV);
+
+                int h = hsv_pixel(0,0)[0]; // Matiz (0 a 179 en OpenCV)
+                int s = hsv_pixel(0,0)[1]; // Saturación (0 a 255)
+                int v = hsv_pixel(0,0)[2]; // Brillo (0 a 255)
+
+                // Se clasifica el color usando umbrales
+                String color_name = "?";
+
+                if(s < 70 && v > 100){ 
+                    color_name = "W"; // Si la saturación es muy baja y hay luz suficiente, es blanco
+                }else{
+                    if(h < 10 || h > 165){
+                        color_name = "R"; // El rojo está cerca del 0 y del 179
+                    }else if(h >= 10 && h < 25){
+                        color_name = "O"; // Naranja
+                    }else if(h >= 25 && h < 45){
+                        color_name = "Y"; // Amarillo
+                    }else if(h >= 45 && h < 85){
+                        color_name = "G"; // Verde
+                    }else if(h >= 85 && h < 130){
+                        color_name = "B"; // Azul
+                    }else{
+                        color_name = "R"; // Suele ser rojo mal iluminado
+                    }
+                }
+
+                result_colors.push_back(color_name);
             }
         }
 

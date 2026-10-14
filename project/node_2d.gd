@@ -69,4 +69,6 @@ func _process(delta: float) -> void:
 				
 			# Se envía a C++ para analizar los colores
 			var colors = scanner.analyze_colors(scaled_rects)
-			print(colors)
+			
+			# Se envían los colores detectados a la interfaz para que los pinte
+			$CanvasLayer/GridOverlay.update_detected_colors(colors)
