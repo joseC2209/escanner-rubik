@@ -62,6 +62,8 @@ target_sources(${LIBNAME}
     src/register_types.h
     src/scanner_core.cpp
     src/scanner_core.h
+    src/rubik_solver.cpp
+    src/rubik_solver.h
 )
 
 # Fetch a list of the xml files to use for documentation and add to our target

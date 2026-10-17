@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "scanner_core.h"
+#include "rubik_solver.h"
 
 using namespace godot;
 
@@ -15,6 +16,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 		return;
 	}
 	ClassDB::register_class<ScannerCore>();
+	ClassDB::register_class<RubikSolver>();
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {
