@@ -99,7 +99,11 @@ func update_ui_text():
 	else:
 		face_label.text = "¡Cubo completado!"
 		capture_button.disabled = true
-		print("ESTADO FINAL DEL CUBO: ", captured_faces)
+		
+		# Se instancia el motor de resolución
+		var solver = RubikSolver.new()
+		# Se le inyecta la matriz de colores
+		solver.load_from_colors(captured_faces)
 
 func _on_capture_button_pressed() -> void:
 	# Se asegura de que haya leído 4 colores y no se haya capturado nada vacío

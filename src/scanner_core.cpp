@@ -113,13 +113,13 @@ namespace godot{
                 if(s < 70 && v > 100){ 
                     color_name = "W"; // Si la saturación es muy baja y hay luz suficiente, es blanco
                 }else{
-                    if(h < 10 || h > 165){
+                    if(h < 5 || h > 165){
                         color_name = "R"; // El rojo está cerca del 0 y del 179
-                    }else if(h >= 10 && h < 25){
+                    }else if(h >= 5 && h < 16){
                         color_name = "O"; // Naranja
-                    }else if(h >= 25 && h < 45){
+                    }else if(h >= 16 && h < 38){
                         color_name = "Y"; // Amarillo
-                    }else if(h >= 45 && h < 85){
+                    }else if(h >= 38 && h < 85){
                         color_name = "G"; // Verde
                     }else if(h >= 85 && h < 130){
                         color_name = "B"; // Azul

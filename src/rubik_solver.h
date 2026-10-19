@@ -16,6 +16,9 @@ namespace godot{
 
     private:
         CubeCorner state[8]; // El estado completo del cubo son las 8 esquinas
+
+        // Identifica la pieza según sus colores
+        uint8_t identify_piece(char c1, char c2, char c3);
     
     protected:
         static void _bind_methods();
@@ -29,6 +32,9 @@ namespace godot{
 
         // Devuelve el estado como texto para poder verlo en Godot
         String get_state_string();
+
+        // Recibe la matriz de colores desde Godot
+        void load_from_colors(Array faces);
     };
 }
 
