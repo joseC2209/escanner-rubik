@@ -104,6 +104,11 @@ func update_ui_text():
 		var solver = RubikSolver.new()
 		# Se le inyecta la matriz de colores
 		solver.load_from_colors(captured_faces)
+		
+		# Se imprime la solución
+		var solucion = solver.solve()
+		print("LA SOLUCIÓN ES: ", solucion)
+		face_label.text = "Solución " + solucion
 
 func _on_capture_button_pressed() -> void:
 	# Se asegura de que haya leído 4 colores y no se haya capturado nada vacío
