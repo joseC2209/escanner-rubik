@@ -23,8 +23,11 @@ namespace godot{
     private:
         CubeCorner state[8]; // El estado completo del cubo son las 8 esquinas
 
-        // Identifica la pieza según sus colores
-        uint8_t identify_piece(char c1, char c2, char c3);
+        // Deduce el color opuesto estándar
+        char get_opposite_color(char c);
+
+        // Identifica la pieza según sus colores recibiendo los colores dinámicos del cubo
+        uint8_t identify_piece(char c1, char c2, char c3, char u, char d, char f, char b, char r, char l);
 
         // Comprime el estado en un número de 64 bits
         uint64_t encode_state() const;

@@ -39,25 +39,35 @@ String RubikSolver::get_state_string(){
     return result;
 }
 
-uint8_t RubikSolver::identify_piece(char c1, char c2, char c3){
+char RubikSolver::get_opposite_color(char c){
+    if(c == 'W') return 'Y';
+    if(c == 'Y') return 'W';
+    if(c == 'G') return 'B';
+    if(c == 'B') return 'G';
+    if(c == 'R') return 'O';
+    if(c == 'O') return 'R';
+    return '?';
+}
+
+uint8_t RubikSolver::identify_piece(char c1, char c2, char c3, char u, char d, char f, char b, char r, char l){
 
     // Buscamos qué colores tiene
-    bool hasW = (c1 == 'W' || c2 == 'W' || c3 == 'W');
-    bool hasY = (c1 == 'Y' || c2 == 'Y' || c3 == 'Y');
-    bool hasG = (c1 == 'G' || c2 == 'G' || c3 == 'G');
-    bool hasB = (c1 == 'B' || c2 == 'B' || c3 == 'B');
-    bool hasR = (c1 == 'R' || c2 == 'R' || c3 == 'R');
-    bool hasO = (c1 == 'O' || c2 == 'O' || c3 == 'O');
+    bool hasU = (c1 == u || c2 == u || c3 == u);
+    bool hasD = (c1 == d || c2 == d || c3 == d);
+    bool hasF = (c1 == f || c2 == f || c3 == f);
+    bool hasB = (c1 == b || c2 == b || c3 == b);
+    bool hasR = (c1 == r || c2 == r || c3 == r);
+    bool hasL = (c1 == l || c2 == l || c3 == l);
 
     // Mapeo fijo de las 8 piezas
-    if(hasW && hasB && hasO) return 0; // UBL = Arriba-Atrás-Izquierda
-    if(hasW && hasB && hasR) return 1; // UBR = Arriba-Atrás-Derecha
-    if(hasW && hasG && hasO) return 2; // UFL = Arriba-Frente-Izquierda
-    if(hasW && hasG && hasR) return 3; // UFR = Arriba-Frente-Derecha
-    if(hasY && hasB && hasO) return 4; // DBL = Abajo-Atrás-Izquierda
-    if(hasY && hasB && hasR) return 5; // DBR = Abajo-Atrás-Derecha
-    if(hasY && hasG && hasO) return 6; // DFL = Abajo-Frente-Izquierda
-    if(hasY && hasG && hasR) return 7; // DFR = Abajo-Frente-Derecha
+    if(hasU && hasB && hasL) return 0; // UBL = Arriba-Atrás-Izquierda
+    if(hasU && hasB && hasR) return 1; // UBR = Arriba-Atrás-Derecha
+    if(hasU && hasF && hasL) return 2; // UFL = Arriba-Frente-Izquierda
+    if(hasU && hasF && hasR) return 3; // UFR = Arriba-Frente-Derecha
+    if(hasD && hasB && hasL) return 4; // DBL = Abajo-Atrás-Izquierda
+    if(hasD && hasB && hasR) return 5; // DBR = Abajo-Atrás-Derecha
+    if(hasD && hasF && hasL) return 6; // DFL = Abajo-Frente-Izquierda
+    if(hasD && hasF && hasR) return 7; // DFR = Abajo-Frente-Derecha
 
     return 0;
 }
@@ -82,25 +92,36 @@ void RubikSolver::load_from_colors(Array faces){
         {1, 9, 12},   // 1 = UBR (U-TR, B-TL, R-TR)
         {2, 17, 4},   // 2 = UFL (U-BL, F-TL, L-TR)
         {3, 5, 8},    // 3 = UFR (U-BR, F-TR, R-TL)
-        {22, 15, 18}, // 4 = DBL (D-BL, B-BR, L-BL)
-        {23, 11, 14}, // 5 = DBR (D-BR, B-BL, B-BR)
-        {20, 19, 6},  // 6 = DFL (D-TL, L-BR, F-BL)
-        {21, 7, 10}   // 7 = DFR (D-TR, F-BR, R-BL)
+        {22, 18, 15}, // 4 = DBL (D-BL, B-BR, L-BL)
+        {23, 14, 11}, // 5 = DBR (D-BR, B-BL, B-BR)
+        {20, 6, 19},  // 6 = DFL (D-TL, L-BR, F-BL)
+        {21, 10, 7}   // 7 = DFR (D-TR, F-BR, R-BL)
     };
+
+    // Anclaje topológico dinámico: se leen los 3 colores de la esquina DBL para
+    // fijarla como ancla
+    char d_col = color_string[22];
+    char l_col = color_string[18];
+    char b_col = color_string[15];
+
+    // Se deducen el resto de caras basándose en los colores opuestos estándar
+    char u_col = get_opposite_color(d_col);
+    char r_col = get_opposite_color(l_col);
+    char f_col = get_opposite_color(b_col);
 
     for(int i = 0; i < 8; i++){
         char c1 = color_string[corners_idx[i][0]];
         char c2 = color_string[corners_idx[i][1]];
         char c3 = color_string[corners_idx[i][2]];
 
-        uint8_t piece_id = identify_piece(c1, c2, c3);
+        uint8_t piece_id = identify_piece(c1, c2, c3, u_col, d_col, f_col, b_col, r_col, l_col);
         uint8_t orientation = 0;
 
-        // Si el color primario (blanco o amarillo) está en c2, ha rotado en sentido horario
-        if(c2 == 'W' || c2 == 'Y'){
-            orientation == 1;
-        } // Si está en c3, ha rotado en sentido antihorario
-        else if(c3 == 'W' || c3 == 'Y'){
+        // Si el color primario (los de la capa U y D) está en c2, ha rotado en sentido antihorario
+        if(c2 == u_col || c2 == d_col){
+            orientation = 1;
+        } // Si está en c3, ha rotado en sentido horario
+        else if(c3 == u_col || c3 == d_col){
             orientation = 2;
         }
 
@@ -130,10 +151,10 @@ void RubikSolver::rotate_R(){
     state[3] = tmp;      // UFR recibe a DFR
 
     // Al rotar R se cambian las orientaciones alternando +1 y +2
-    state[1].orientation = (state[1].orientation + 1) % 3;
-    state[5].orientation = (state[5].orientation + 2) % 3;
-    state[7].orientation = (state[7].orientation + 1) % 3;
-    state[3].orientation = (state[3].orientation + 2) % 3;
+    state[1].orientation = (state[1].orientation + 2) % 3;
+    state[5].orientation = (state[5].orientation + 1) % 3;
+    state[7].orientation = (state[7].orientation + 2) % 3;
+    state[3].orientation = (state[3].orientation + 1) % 3;
 }
 
 void RubikSolver::rotate_F(){
@@ -145,10 +166,10 @@ void RubikSolver::rotate_F(){
     state[2] = tmp;      // UFL recibe a DFL
 
     // Al rotar F se cambian las orientaciones alternando +1 y +2
-    state[3].orientation = (state[3].orientation + 1) % 3;
-    state[7].orientation = (state[7].orientation + 2) % 3;
-    state[6].orientation = (state[6].orientation + 1) % 3;
-    state[2].orientation = (state[2].orientation + 2) % 3;
+    state[3].orientation = (state[3].orientation + 2) % 3;
+    state[7].orientation = (state[7].orientation + 1) % 3;
+    state[6].orientation = (state[6].orientation + 2) % 3;
+    state[2].orientation = (state[2].orientation + 1) % 3;
 }
 
 uint64_t RubikSolver::encode_state() const{
