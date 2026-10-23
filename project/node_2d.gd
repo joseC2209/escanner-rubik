@@ -25,6 +25,13 @@ var faces_names = [
 	"INFERIOR (Amarilla)"
 ]
 
+# Máquina de estados para la UI
+enum AppState{SCANNING, REVIEWING}
+var current_state = AppState.SCANNING
+
+# Ciclo de colores cuando el usuario vaya tocando la pantalla
+var color_cycle = ["W", "G", "R", "B", "O", "Y"]
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# Se inicializa ScannerCore y se añade
@@ -47,7 +54,8 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	if scanner:
+	# Se lee la cámara y analiza los colores si se está escaneando
+	if scanner and current_state == AppState.SCANNING:
 		# Se pide a C++ el fotograma actual de la webcam
 		var img = scanner.get_frame()
 		
@@ -112,8 +120,54 @@ func update_ui_text():
 
 func _on_capture_button_pressed() -> void:
 	# Se asegura de que haya leído 4 colores y no se haya capturado nada vacío
-	if current_scanned_colors.size() == 4 and captured_faces.size() < 6:
+	if current_scanned_colors.size() != 4 and captured_faces.size() >= 6:
+		return
+		
+	if current_state == AppState.SCANNING:
+		# Se congela la imagen para pasar al modo de revisión
+		current_state = AppState.REVIEWING
+		capture_button.text = "Confirmar"
+		face_label.text = "Toca un color para corregirlo"
+		
+	elif current_state == AppState.REVIEWING:
 		# Se guarda una copia del array
 		captured_faces.append(current_scanned_colors.duplicate())
 		print("Cara guardada: ", current_scanned_colors)
+		
+		current_state = AppState.SCANNING
+		capture_button.text = "Capturar cara"
+		
 		update_ui_text()
+
+# Detecta los toques en la pantalla para cambiar el color manualmente
+func _input(event: InputEvent) -> void:
+	# Si el cubo está completado, se ignoran los toques
+	if captured_faces.size() >= 6 or current_state != AppState.REVIEWING:
+		return
+	
+	var is_click = (event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT)
+	var is_touch = (event is InputEventScreenTouch and event.is_pressed())
+	
+	if is_click or is_touch:
+		var touch_pos = event.position
+		var ui_rects = $CanvasLayer/GridOverlay.get_grid_rects()
+		
+		# Se comprueba si el toque ha sido en alguno de los 4 cuadraditos
+		for i in range(ui_rects.size()):
+			if ui_rects[i].has_point(touch_pos):
+				# Se encuentra el color actual y se pasa al siguiente según el ciclo
+				var current_c = current_scanned_colors[i]
+				var idx = color_cycle.find(current_c)
+				if idx == -1: idx = 0
+				
+				var next_c = color_cycle[(idx + 1) % color_cycle.size()]
+				
+				# Como la cámara está en pausa, se modifica el color directamente
+				current_scanned_colors[i] = next_c
+				
+				# Se fuerza el redibujado visual instantáneamente
+				$CanvasLayer/GridOverlay.update_detected_colors(current_scanned_colors)
+				
+				# Se marca el evento como "consumido" para que Godot no haga clics dobles
+				get_viewport().set_input_as_handled()
+				break
