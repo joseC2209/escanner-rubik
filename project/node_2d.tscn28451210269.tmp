@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3 uid="uid://mo5b3mikuc38"]
+
+[ext_resource type="Script" uid="uid://bq343vf744845" path="res://node_2d.gd" id="1_wtcfe"]
+[ext_resource type="Script" uid="uid://bljtu4raaekd1" path="res://grid_overlay.gd" id="2_0e48y"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_0e48y"]
+font_size = 36
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+shadow_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(2, 2)
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_wtcfe")
+
+[node name="CameraScreen" type="TextureRect" parent="."]
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GridOverlay" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_0e48y")
+
+[node name="FaceLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+text = "Escanea la cara..."
+label_settings = SubResource("LabelSettings_0e48y")
+horizontal_alignment = 1
+
+[node name="CaptureButton" type="Button" parent="CanvasLayer"]
+custom_minimum_size = Vector2(250, 80)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_top = -100.0
+offset_right = 125.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 32
+text = "Capturar Cara"
+
+[connection signal="pressed" from="CanvasLayer/CaptureButton" to="." method="_on_capture_button_pressed"]

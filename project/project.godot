@@ -14,3 +14,11 @@ config/name="godot cpp template"
 run/main_scene="uid://mo5b3mikuc38"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+Global="*res://Global.gd"
+
+[editor]
+
+version_control/autoload_on_startup=true

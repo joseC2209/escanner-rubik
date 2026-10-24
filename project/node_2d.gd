@@ -105,7 +105,7 @@ func update_ui_text():
 	if captured_faces.size() < 6:
 		face_label.text = "Escanea la cara: " + faces_names[captured_faces.size()]
 	else:
-		face_label.text = "¡Cubo completado!"
+		# Se deshabilita el botón por seguridad antes del cambio
 		capture_button.disabled = true
 		
 		# Se instancia el motor de resolución
@@ -113,10 +113,15 @@ func update_ui_text():
 		# Se le inyecta la matriz de colores
 		solver.load_from_colors(captured_faces)
 		
-		# Se imprime la solución
+		# Se calcula la solución
 		var solucion = solver.solve()
-		print("LA SOLUCIÓN ES: ", solucion)
-		face_label.text = "Solución " + solucion
+		
+		# Se guardan tanto la solución como el estado original para la escena 3D.
+		Global.solucion_actual = solucion
+		Global.colores_cubo = captured_faces.duplicate(true)
+		
+		# Se libera la cámara y se transiciona al visualizador 3D
+		get_tree().change_scene_to_file("res://visualizador_3d.tscn")
 
 func _on_capture_button_pressed() -> void:
 	# Se asegura de que haya leído 4 colores y no se haya capturado nada vacío
@@ -132,8 +137,6 @@ func _on_capture_button_pressed() -> void:
 	elif current_state == AppState.REVIEWING:
 		# Se guarda una copia del array
 		captured_faces.append(current_scanned_colors.duplicate())
-		print("Cara guardada: ", current_scanned_colors)
-		
 		current_state = AppState.SCANNING
 		capture_button.text = "Capturar cara"
 		

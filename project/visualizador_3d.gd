@@ -26,10 +26,18 @@ var paso_actual = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	generar_colores_resueltos()
-	# Prueba para ver si lee bien las direcciones y dobles giros 
-	cargar_solucion("U F2 R' U'") 
-	pass # Replace with function body.
+	if Global.colores_cubo.size() == 6:
+		generar_colores_escaneados(Global.colores_cubo)
+	else:
+		# Fallback para abrir esta escena directamente durante las pruebas.
+		generar_colores_resueltos()
+	
+	# Se carga la solución real que el escáner ha dejado guardada en el Global
+	if Global.solucion_actual != "":
+		cargar_solucion(Global.solucion_actual)
+	else:
+		# Caso de prueba
+		cargar_solucion("U F2 R' U'")
 
 func rotate_face(face_name: String, turns: int):
 	if is_animating:
@@ -88,6 +96,9 @@ func _on_rotation_finished(piezas_giradas: Array):
 func cargar_solucion(solucion_str: String):
 	secuencia_movimientos.clear()
 	paso_actual = 0
+	if solucion_str == "Cubo ya resuelto":
+		actualizar_ui()
+		return
 	
 	# Se trocea el string tomando como separador los espacios
 	var movimientos_raw = solucion_str.strip_edges().split(" ")
@@ -162,7 +173,74 @@ func _on_btn_anterior_pressed():
 	rotate_face(move["face"], -move["turns"])
 	actualizar_ui()
 
-# Se generan las pegatinas de colores según la posición inicial
+# Pinta el cubo con los colores capturados, respetando el orden de las caras:
+# U, F, R, B, L, D; cada cara contiene TL, TR, BL y BR.
+func generar_colores_escaneados(faces: Array):
+	var mat_negro = StandardMaterial3D.new()
+	mat_negro.albedo_color = Color(0.1, 0.1, 0.1)
+
+	for cubie in piezas_container.get_children():
+		cubie.material_override = mat_negro
+		var pos = cubie.position
+
+		# Cada condición asigna la posición de la pegatina dentro de su cara.
+		if pos.y > 0: anadir_pegatina(cubie, Vector3(0, 0.476, 0), Vector3(-90, 0, 0), color_de_codigo(color_de_cara(faces, 0, indice_superior(pos))))
+		if pos.y < 0: anadir_pegatina(cubie, Vector3(0, -0.476, 0), Vector3(90, 0, 0), color_de_codigo(color_de_cara(faces, 5, indice_inferior(pos))))
+		if pos.x > 0: anadir_pegatina(cubie, Vector3(0.476, 0, 0), Vector3(0, 90, 0), color_de_codigo(color_de_cara(faces, 2, indice_derecha(pos))))
+		if pos.x < 0: anadir_pegatina(cubie, Vector3(-0.476, 0, 0), Vector3(0, -90, 0), color_de_codigo(color_de_cara(faces, 4, indice_izquierda(pos))))
+		if pos.z > 0: anadir_pegatina(cubie, Vector3(0, 0, 0.476), Vector3(0, 0, 0), color_de_codigo(color_de_cara(faces, 1, indice_frontal(pos))))
+		if pos.z < 0: anadir_pegatina(cubie, Vector3(0, 0, -0.476), Vector3(0, 180, 0), color_de_codigo(color_de_cara(faces, 3, indice_trasera(pos))))
+
+func color_de_cara(faces: Array, cara: int, indice: int) -> String:
+	return str(faces[cara][indice])
+
+func color_de_codigo(codigo: String) -> Color:
+	match codigo:
+		"W": return Color.WHITE
+		"Y": return Color.YELLOW
+		"R": return Color.RED
+		"O": return Color.DARK_ORANGE
+		"G": return Color.GREEN
+		"B": return Color.BLUE
+		_: return Color.MAGENTA
+
+func indice_superior(pos: Vector3) -> int:
+	if pos.z < 0 and pos.x < 0: return 0
+	if pos.z < 0: return 1
+	if pos.x < 0: return 2
+	return 3
+
+func indice_inferior(pos: Vector3) -> int:
+	if pos.z > 0 and pos.x < 0: return 0
+	if pos.z > 0: return 1
+	if pos.x < 0: return 2
+	return 3
+
+func indice_frontal(pos: Vector3) -> int:
+	if pos.y > 0 and pos.x < 0: return 0
+	if pos.y > 0: return 1
+	if pos.x < 0: return 2
+	return 3
+
+func indice_derecha(pos: Vector3) -> int:
+	if pos.z > 0 and pos.y > 0: return 0
+	if pos.z < 0 and pos.y > 0: return 1
+	if pos.z > 0: return 2
+	return 3
+
+func indice_trasera(pos: Vector3) -> int:
+	if pos.x > 0 and pos.y > 0: return 0
+	if pos.x < 0 and pos.y > 0: return 1
+	if pos.x > 0: return 2
+	return 3
+
+func indice_izquierda(pos: Vector3) -> int:
+	if pos.z < 0 and pos.y > 0: return 0
+	if pos.z > 0 and pos.y > 0: return 1
+	if pos.z < 0: return 2
+	return 3
+
+# Se generan pegatinas resueltas si se abre esta escena sin pasar por el escaneo.
 func generar_colores_resueltos():
 	# Material para el plásico del cubo (gris muy oscuro, casi negro)
 	var mat_negro = StandardMaterial3D.new()
@@ -180,7 +258,7 @@ func generar_colores_resueltos():
 		# Cara derecha (Rojo)
 		if pos.x > 0: anadir_pegatina(cubie, Vector3(0.476, 0, 0), Vector3(0, 90, 0), Color.RED)
 		# Cara izquieda (Naranja)
-		if pos.x < 0: anadir_pegatina(cubie, Vector3(-0.476, 0, 0), Vector3(0, -90, 0), Color.ORANGE)
+		if pos.x < 0: anadir_pegatina(cubie, Vector3(-0.476, 0, 0), Vector3(0, -90, 0), Color.DARK_ORANGE)
 		# Cara frontal (Verde)
 		if pos.z > 0: anadir_pegatina(cubie, Vector3(0, 0, 0.476), Vector3(0, 0, 0), Color.GREEN)
 		# Cara trasera (Azul)
