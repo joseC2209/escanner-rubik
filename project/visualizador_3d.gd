@@ -15,9 +15,9 @@ var ejes_rotacion = {
 }
 
 # Controles de la interfaz
-@onready var btn_anterior = $CanvasLayer/MarginContainer/HBoxContainer/BtnAnterior
-@onready var btn_siguiente = $CanvasLayer/MarginContainer/HBoxContainer/BtnSiguiente
-@onready var move_label = $CanvasLayer/MarginContainer/HBoxContainer/MoveLabel
+@onready var btn_anterior = $CanvasLayer/MarginContainer/HBoxContainer/CenterContainer/BtnAnterior
+@onready var btn_siguiente = $CanvasLayer/MarginContainer/HBoxContainer/CenterContainer2/BtnSiguiente
+@onready var move_label = $CanvasLayer/MarginContainer2/MoveLabel
 
 # Cola de movimientos
 var secuencia_movimientos = []
@@ -26,6 +26,7 @@ var paso_actual = 0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	generar_colores_resueltos()
 	# Prueba para ver si lee bien las direcciones y dobles giros 
 	cargar_solucion("U F2 R' U'") 
 	pass # Replace with function body.
@@ -123,7 +124,7 @@ func actualizar_ui():
 		var mov = secuencia_movimientos[i]["texto"]
 		if i == paso_actual:
 			# Se resalta en verde y negrita el movimiento actual
-			texto_completo += "[color=green][b]" + mov + "[/b][/color] "
+			texto_completo += "[color=dark_green][b]" + mov + "[/b][/color] "
 		else:
 			# Texto normal para los movimientos ya hechos o los futuros
 			texto_completo += mov + " "
@@ -160,6 +161,47 @@ func _on_btn_anterior_pressed():
 	# Para deshacer el movimiento, se le tiene que dar la vuelta al signo de los giros
 	rotate_face(move["face"], -move["turns"])
 	actualizar_ui()
+
+# Se generan las pegatinas de colores según la posición inicial
+func generar_colores_resueltos():
+	# Material para el plásico del cubo (gris muy oscuro, casi negro)
+	var mat_negro = StandardMaterial3D.new()
+	mat_negro.albedo_color = Color(0.1, 0.1, 0.1)
+	
+	for cubie in piezas_container.get_children():
+		cubie.material_override = mat_negro
+		var pos = cubie.position
+		
+		# Dependiendo de la posición tridimensional, se le pegan los colores
+		# Cara superior (Blanco)
+		if pos.y > 0: anadir_pegatina(cubie, Vector3(0, 0.476, 0), Vector3(-90, 0, 0), Color.WHITE)
+		# Cara inferior (Amarillo)
+		if pos.y < 0: anadir_pegatina(cubie, Vector3(0, -0.476, 0), Vector3(90, 0, 0), Color.YELLOW)
+		# Cara derecha (Rojo)
+		if pos.x > 0: anadir_pegatina(cubie, Vector3(0.476, 0, 0), Vector3(0, 90, 0), Color.RED)
+		# Cara izquieda (Naranja)
+		if pos.x < 0: anadir_pegatina(cubie, Vector3(-0.476, 0, 0), Vector3(0, -90, 0), Color.ORANGE)
+		# Cara frontal (Verde)
+		if pos.z > 0: anadir_pegatina(cubie, Vector3(0, 0, 0.476), Vector3(0, 0, 0), Color.GREEN)
+		# Cara trasera (Azul)
+		if pos.z < 0: anadir_pegatina(cubie, Vector3(0, 0, -0.476), Vector3(0, 180, 0), Color.BLUE)
+		
+# Instancia un QuadMesh para simular la pegatina
+func anadir_pegatina(padre: Node3D, pos_relativa: Vector3, rotacion_grados: Vector3, color: Color):
+	var pegatina = MeshInstance3D.new()
+	var mesh = QuadMesh.new()
+	mesh.size = Vector2(0.85, 0.85) # Más pequeña que la pieza (0.95) para dejar el borde negro
+	
+	var mat = StandardMaterial3D.new()
+	mat.albedo_color = color
+	# Se hace que el color sea puro y no se vea alterado demasiado por las sombras
+	mat.roughness = 0.3
+	mesh.material = mat
+	
+	pegatina.mesh = mesh
+	padre.add_child(pegatina)
+	pegatina.position = pos_relativa
+	pegatina.rotation_degrees = rotacion_grados
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

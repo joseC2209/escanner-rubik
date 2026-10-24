@@ -1,9 +1,59 @@
-[gd_scene load_steps=3 format=3 uid="uid://d360j8g5jrqsx"]
+[gd_scene load_steps=8 format=3 uid="uid://d360j8g5jrqsx"]
 
 [ext_resource type="Script" uid="uid://coc4kpnb5ikse" path="res://visualizador_3d.gd" id="1_pvlhl"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_l8qso"]
 size = Vector3(0.95, 0.95, 0.95)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pvlhl"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.67230505, 1.7688051e-06, 6.256998e-07, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8rk8x"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.27515873, 3.1585805e-07, 7.219613e-08, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wmgkb"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0.65320206, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k1p6c"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0.1657807, 0, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="Environment" id="Environment_pvlhl"]
+background_mode = 1
+background_color = Color(0.481938, 0.6497523, 1, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
 
 [node name="Visualizador3D" type="Node3D"]
 script = ExtResource("1_pvlhl")
@@ -52,12 +102,27 @@ mesh = SubResource("BoxMesh_l8qso")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
-anchors_preset = 12
-anchor_top = 1.0
+[node name="MarginContainer2" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -31.0
+offset_bottom = 570.0
+grow_horizontal = 2
+theme_override_constants/margin_top = 20
+
+[node name="MoveLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/normal_font_size = 40
+theme_override_font_sizes/bold_font_size = 40
+bbcode_enabled = true
+text = "Movimiento: - / -"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+offset_top = 577.0
+offset_right = 1152.0
+offset_bottom = 648.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/margin_left = 20
@@ -68,21 +133,48 @@ theme_override_constants/margin_bottom = 20
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/MarginContainer"]
 layout_mode = 2
 
-[node name="BtnAnterior" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer"]
-layout_mode = 2
-text = "Anterior"
-
-[node name="MoveLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-bbcode_enabled = true
-text = "Movimiento: - / -"
-fit_content = true
-horizontal_alignment = 1
 
-[node name="BtnSiguiente" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+[node name="BtnAnterior" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer/CenterContainer"]
 layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.42601457, 0.35512468, 1)
+theme_override_colors/font_focus_color = Color(1, 0.42745098, 0.35686275, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.42745098, 0.35686275, 1)
+theme_override_colors/font_hover_color = Color(0.99999505, 0.22991073, 0.17071915, 1)
+theme_override_colors/font_hover_pressed_color = Color(1, 0.23137255, 0.17254902, 1)
+theme_override_colors/font_disabled_color = Color(0.809009, 0.048461996, 6.141484e-05, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_pvlhl")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pvlhl")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pvlhl")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_8rk8x")
+text = "Anterior"
+
+[node name="CenterContainer2" type="CenterContainer" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BtnSiguiente" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer/CenterContainer2"]
+layout_mode = 2
+focus_mode = 0
+theme_override_colors/font_color = Color(0.28008667, 0.9999997, 0.25472754, 1)
+theme_override_colors/font_focus_color = Color(0.2784314, 1, 0.25490198, 1)
+theme_override_colors/font_pressed_color = Color(0.2784314, 1, 0.25490198, 1)
+theme_override_colors/font_hover_color = Color(5.5350365e-06, 0.9328809, 0.007953125, 1)
+theme_override_colors/font_hover_pressed_color = Color(0, 0.93333334, 0.007843138, 1)
+theme_override_colors/font_disabled_color = Color(6.016344e-07, 0.5731032, 0.0026826155, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_wmgkb")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_wmgkb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_wmgkb")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_k1p6c")
 text = "Siguiente"
 
-[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/BtnAnterior" to="." method="_on_btn_anterior_pressed"]
-[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/BtnSiguiente" to="." method="_on_btn_siguiente_pressed"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_pvlhl")
+
+[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/CenterContainer/BtnAnterior" to="." method="_on_btn_anterior_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/CenterContainer2/BtnSiguiente" to="." method="_on_btn_siguiente_pressed"]
