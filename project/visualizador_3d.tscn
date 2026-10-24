@@ -49,3 +49,40 @@ mesh = SubResource("BoxMesh_l8qso")
 [node name="Cubie_7" type="MeshInstance3D" parent="Piezas"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.5, 0.5)
 mesh = SubResource("BoxMesh_l8qso")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -31.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/MarginContainer"]
+layout_mode = 2
+
+[node name="BtnAnterior" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "Anterior"
+
+[node name="MoveLabel" type="RichTextLabel" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+text = "Movimiento: - / -"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="BtnSiguiente" type="Button" parent="CanvasLayer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+text = "Siguiente"
+
+[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/BtnAnterior" to="." method="_on_btn_anterior_pressed"]
+[connection signal="pressed" from="CanvasLayer/MarginContainer/HBoxContainer/BtnSiguiente" to="." method="_on_btn_siguiente_pressed"]
