@@ -1,14 +1,27 @@
-[gd_scene load_steps=4 format=3 uid="uid://mo5b3mikuc38"]
+[gd_scene load_steps=5 format=3 uid="uid://mo5b3mikuc38"]
 
 [ext_resource type="Script" uid="uid://bq343vf744845" path="res://node_2d.gd" id="1_wtcfe"]
 [ext_resource type="Script" uid="uid://bljtu4raaekd1" path="res://grid_overlay.gd" id="2_0e48y"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_0e48y"]
+line_spacing = 2.0
 font_size = 36
 outline_size = 4
 outline_color = Color(0, 0, 0, 1)
+shadow_size = 0
 shadow_color = Color(0, 0, 0, 1)
 shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0e48y"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(2.2140146e-06, 0, 0.65653014, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_wtcfe")
@@ -31,7 +44,8 @@ script = ExtResource("2_0e48y")
 [node name="FaceLabel" type="Label" parent="CanvasLayer"]
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 23.0
+offset_top = 32.0
+offset_bottom = 82.0
 grow_horizontal = 2
 text = "Escanea la cara..."
 label_settings = SubResource("LabelSettings_0e48y")
@@ -50,7 +64,18 @@ offset_right = 125.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0.42476186, 0.6067884, 1, 1)
+theme_override_colors/font_focus_color = Color(0.42352942, 0.60784316, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.42352942, 0.60784316, 1, 1)
+theme_override_colors/font_hover_color = Color(0.24291077, 0.46904624, 0.9999859, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.24313726, 0.47058824, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.0041760164, 0.23603359, 0.93107826, 1)
 theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_0e48y")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_0e48y")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0e48y")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_0e48y")
 text = "Capturar Cara"
 
 [connection signal="pressed" from="CanvasLayer/CaptureButton" to="." method="_on_capture_button_pressed"]

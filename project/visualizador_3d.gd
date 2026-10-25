@@ -11,7 +11,7 @@ var is_animating = false
 var ejes_rotacion = {
 	"U" : Vector3.UP,     # Eje Y
 	"R" : Vector3.RIGHT,  # Eje X
-	"F" : Vector3.FORWARD # Eje Z
+	"F" : Vector3.BACK    # Eje Z
 }
 
 # Controles de la interfaz

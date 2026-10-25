@@ -134,11 +134,23 @@ func _on_capture_button_pressed() -> void:
 		capture_button.text = "Confirmar"
 		face_label.text = "Toca un color para corregirlo"
 		
+		# Cambios estéticos en la revisión
+		camera_sprite.visible = false # Se oculta la cámara
+		# Se pone el fondo gris oscuro
+		camera_screeen.modulate = Color(0.15, 0.15, 0.15)
+		# Se vuelve a colores opacos
+		$CanvasLayer/GridOverlay.set_review_mode(true)
+		
 	elif current_state == AppState.REVIEWING:
 		# Se guarda una copia del array
 		captured_faces.append(current_scanned_colors.duplicate())
 		current_state = AppState.SCANNING
 		capture_button.text = "Capturar cara"
+		
+		# Se vuelve a la estética de escaneo
+		camera_sprite.visible = true # Se devuelve la cámara
+		# El fondo se restaura solo en el _process() pero se le avisa a la grid
+		$CanvasLayer/GridOverlay.set_review_mode(false)
 		
 		update_ui_text()
 

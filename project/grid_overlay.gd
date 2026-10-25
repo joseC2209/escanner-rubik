@@ -4,8 +4,11 @@ extends Control
 var grid_size : int = 2
 var square_size : float = 140.0 # Tamaño de cada cuadradito en píxeles
 var line_thickness : float = 4.0
-var grid_color : Color = Color(0.2, 0.8, 0.2, 0.8)
+var grid_color : Color = Color.BLACK
 var current_colors : Array = [] # Guarda las letras detectadas
+
+# Controla si está en la pantalla de revisión
+var is_reviewing: bool = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -16,8 +19,14 @@ func update_detected_colors(colors: Array):
 	current_colors = colors
 	queue_redraw()
 	
+# Cambia el estado visual de la cuadrícula
+func set_review_mode(reviewing: bool):
+	is_reviewing = reviewing
+	queue_redraw()
+	
 func get_color_from_char(c: String) -> Color:
-	var alpha = 0.4 # Nivel de opacidad del relleno del color que se muestra
+	# Si se está revisando, color opaco (1.0). Si se está escaneando, color translúcido (0.4)
+	var alpha = 1.0 if is_reviewing else 0.4
 	match c:
 		"R": return Color(1.0, 0.1, 0.1, alpha) # Rojo
 		"G": return Color(0.1, 1.0, 0.1, alpha) # Verde
