@@ -46,7 +46,7 @@ android.x86_64.double.debug = "./android/librubik_scanner.android.template_debug
 android.x86_64.single.release = "./android/librubik_scanner.android.template_release.x86_64.so"
 android.x86_64.double.release = "./android/librubik_scanner.android.template_release.x86_64.double.so"
 
-android.arm64.single.debug = "./android/librubik_scanner.android.template_debug.arm64.so"
+android.arm64.single.debug = "res://bin/android/librubik_scanner.android.template_debug.arm64.so"
 android.arm64.double.debug = "./android/librubik_scanner.android.template_debug.arm64.double.so"
 android.arm64.single.release = "./android/librubik_scanner.android.template_release.arm64.so"
 android.arm64.double.release = "./android/librubik_scanner.android.template_release.arm64.double.so"

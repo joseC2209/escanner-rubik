@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://mo5b3mikuc38"]
+[gd_scene load_steps=6 format=3 uid="uid://mo5b3mikuc38"]
 
 [ext_resource type="Script" uid="uid://bq343vf744845" path="res://node_2d.gd" id="1_wtcfe"]
 [ext_resource type="Script" uid="uid://bljtu4raaekd1" path="res://grid_overlay.gd" id="2_0e48y"]
+[ext_resource type="Script" uid="uid://dgqu7xhbcqgf6" path="res://addons/NativeCameraPlugin/NativeCamera.gd" id="3_epypp"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_0e48y"]
 line_spacing = 2.0
@@ -44,8 +45,8 @@ script = ExtResource("2_0e48y")
 [node name="FaceLabel" type="Label" parent="CanvasLayer"]
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 32.0
-offset_bottom = 82.0
+offset_top = 120.0
+offset_bottom = 170.0
 grow_horizontal = 2
 text = "Escanea la cara..."
 label_settings = SubResource("LabelSettings_0e48y")
@@ -58,10 +59,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -125.0
-offset_top = -100.0
-offset_right = 125.0
-offset_bottom = -20.0
+offset_left = -129.0
+offset_top = -298.0
+offset_right = 211.0
+offset_bottom = -198.0
 grow_horizontal = 2
 grow_vertical = 0
 focus_mode = 0
@@ -78,4 +79,10 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_0e48y")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_0e48y")
 text = "Capturar Cara"
 
+[node name="AndroidCamera" type="Node" parent="."]
+script = ExtResource("3_epypp")
+metadata/_custom_type_script = "uid://dgqu7xhbcqgf6"
+
 [connection signal="pressed" from="CanvasLayer/CaptureButton" to="." method="_on_capture_button_pressed"]
+[connection signal="camera_permission_granted" from="AndroidCamera" to="." method="_on_android_camera_camera_permission_granted"]
+[connection signal="frame_available" from="AndroidCamera" to="." method="_on_android_camera_frame_available"]

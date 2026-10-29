@@ -2,7 +2,7 @@ extends Control
 
 # Configuración de la cuadrícula del cubo 2x2x2
 var grid_size : int = 2
-var square_size : float = 140.0 # Tamaño de cada cuadradito en píxeles
+var square_size : float = 260.0 # Tamaño de cada cuadradito en píxeles
 var line_thickness : float = 4.0
 var grid_color : Color = Color.BLACK
 var current_colors : Array = [] # Guarda las letras detectadas

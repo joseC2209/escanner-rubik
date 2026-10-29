@@ -5,19 +5,16 @@
 namespace godot{
 
     void ScannerCore::_bind_methods(){
-        // Exponemos la función a GDScript
         ClassDB::bind_method(D_METHOD("test_connection"), &ScannerCore::test_connection);
         ClassDB::bind_method(D_METHOD("open_camera"), &ScannerCore::open_camera);
         ClassDB::bind_method(D_METHOD("get_frame"), &ScannerCore::get_frame);
         ClassDB::bind_method(D_METHOD("analyze_colors", "grid_rects"), &ScannerCore::analyze_colors);
+        ClassDB::bind_method(D_METHOD("analyze_colors_from_image", "image", "grid_rects"), &ScannerCore::analyze_colors_from_image);
     }
 
     ScannerCore::ScannerCore(){}
     ScannerCore::~ScannerCore(){
-        // Si la cámara está abierta, se apaga tras cerrar Godot
-        if(cap.isOpened()){
-            cap.release();
-        }
+        if(cap.isOpened()) cap.release();
     }
 
     void ScannerCore::test_connection(){
@@ -25,22 +22,27 @@ namespace godot{
     }
 
     bool ScannerCore::open_camera(){
-        // Probamos varias entradas porque el índice 0 puede ser una cámara normal o virtual
         for(int camera_index = 0; camera_index < 3 && !cap.isOpened(); ++camera_index){
-            // Media Foundation suele funcionar mejor con webcams modernas de Windows
-            cap.open(camera_index, cv::CAP_MSMF);
-            // DirectShow es la alternativa para los dispositivos que no soportan MSMF
+            // Se intenta con la API genérica por defecto
+            cap.open(camera_index, cv::CAP_ANY);
+
+            // Si falla, se fuerza la API nativa de Android
+            if(!cap.isOpened()) cap.open(camera_index, cv::CAP_ANDROID);
+
+            // Si también falla, se intenta con las de Windows
+            if(!cap.isOpened()) cap.open(camera_index, cv::CAP_MSMF);
             if(!cap.isOpened()) cap.open(camera_index, cv::CAP_DSHOW);
 
-            cv::Mat test_frame;
-            // Descartamos cámaras que abren pero no entregan ningún frame
-            if(cap.isOpened() && (!cap.read(test_frame) || test_frame.empty())) cap.release();
             if(cap.isOpened()){
-                cv::Scalar mean;
-                cv::Scalar standard_deviation;
-                cv::meanStdDev(test_frame, mean, standard_deviation);
-                // Un frame completamente uniforme suele indicar un sensor infrarrojo o una entrada vacía
-                if(standard_deviation[0] < 2.0 && standard_deviation[1] < 2.0 && standard_deviation[2] < 2.0) cap.release();
+                // En móviles, el sensor tarda en inicializarse. 
+                // Leemos unos cuantos frames "basura" al vacío para darle tiempo a calentar
+                // y NO cerramos la cámara si salen negros.
+                cv::Mat dummy;
+                for(int i = 0; i < 5; i++){
+                    cap.read(dummy);
+                }
+                // Si hemos llegado hasta aquí, la damos por válida y salimos del bucle
+                break;
             }
         }
         return cap.isOpened();
@@ -49,30 +51,19 @@ namespace godot{
     Ref<Image> ScannerCore::get_frame(){
         if(!cap.isOpened()) return Ref<Image>();
 
-        // Se guarda el frame para que analyze_colors pueda acceder a él
         cap >> current_frame;
-
         if(current_frame.empty()) return Ref<Image>();
 
-        cv::Mat frame;
-        cap >> frame; // Se extrae el fotograma actual de la webcam
+        cv::Mat frame = current_frame;
 
-        if(frame.empty()) return Ref<Image>();
-
-        // OpenCV usa BGR, Godot lo quiere en orden RGB
         cv::Mat frame_rgb;
         cv::cvtColor(frame, frame_rgb, cv::COLOR_BGR2RGB);
-        // La copia evita problemas si OpenCV devuelve filas con padding en memoria
         if(!frame_rgb.isContinuous()) frame_rgb = frame_rgb.clone();
 
-        // Copiamos los píxeles al formato de array que entiende la API de Godot
-        PackedByteArray byte_array;
-        byte_array.resize(frame_rgb.total() * frame_rgb.channels());
-        memcpy(byte_array.ptrw(), frame_rgb.data, byte_array.size());
-
-        // Creamos la imagen con las dimensiones y el formato RGB del frame
-        Ref<Image> img = Image::create_from_data(frame_rgb.cols, frame_rgb.rows, false, Image::FORMAT_RGB8, byte_array);
-        return img;
+        PackedByteArray data;
+        data.resize(frame_rgb.total() * frame_rgb.channels());
+        memcpy(data.ptrw(), frame_rgb.data, data.size());
+        return Image::create_from_data(frame_rgb.cols, frame_rgb.rows, false, Image::FORMAT_RGB8, data);
     }
 
     Array ScannerCore::analyze_colors(Array grid_rects){
@@ -81,7 +72,9 @@ namespace godot{
         if(current_frame.empty()){
             return result_colors;
         }
+        cv::Mat frame = current_frame;
 
+        // Se procesan las regiones
         for(int i = 0; i < grid_rects.size(); i++){
             Rect2 godot_rect = grid_rects[i];
 
@@ -89,13 +82,12 @@ namespace godot{
             cv::Rect cv_rect(godot_rect.position.x, godot_rect.position.y, godot_rect.size.width, godot_rect.size.height);
 
             // Se asegura que el recorte no se salga de los límites de la cámara
-            cv_rect &= cv::Rect(0, 0, current_frame.cols, current_frame.rows);
+            cv_rect &= cv::Rect(0, 0, frame.cols, frame.rows);
 
             if(cv_rect.area() > 0){
                 // Se recorta el cuadradito
-                cv::Mat roi = current_frame(cv_rect);
+                cv::Mat roi = frame(cv_rect);
 
-                // Se calcula el color promedio (BGR ya que es lo que usa OpenCV por defecto)
                 cv::Scalar avg_bgr = cv::mean(roi);
 
                 // Se convierte el color promedio a HSV
@@ -132,6 +124,62 @@ namespace godot{
             }
         }
 
+        return result_colors;
+    }
+
+    Array ScannerCore::analyze_colors_from_image(Ref<Image> image, Array grid_rects){
+        Array result_colors;
+
+        if(image.is_null() || image->is_empty()){
+            return result_colors;
+        }
+
+        // Godot envía la imagen, aseguramos que sea RGB
+        if(image->get_format() != Image::FORMAT_RGB8){
+            image->convert(Image::FORMAT_RGB8);
+        }
+
+        int width = image->get_width();
+        int height = image->get_height();
+        PackedByteArray data = image->get_data();
+
+        // Se crea el cv::Mat usando los bytes de Godot (RGB)
+        cv::Mat frame(height, width, CV_8UC3, data.ptrw());
+
+        for(int i = 0; i < grid_rects.size(); i++){
+            Rect2 godot_rect = grid_rects[i];
+            cv::Rect cv_rect(godot_rect.position.x, godot_rect.position.y, godot_rect.size.width, godot_rect.size.height);
+            cv_rect &= cv::Rect(0, 0, frame.cols, frame.rows);
+
+            if(cv_rect.area() > 0){
+                cv::Mat roi = frame(cv_rect);
+
+                // El promedio calculado aquí es RGB ya que Godot pasa a RGB
+                cv::Scalar avg_rgb = cv::mean(roi);
+
+                // Se convierte RGB a HSV
+                cv::Mat3b rgb_pixel(cv::Vec3b(avg_rgb[0], avg_rgb[1], avg_rgb[2]));
+                cv::Mat3b hsv_pixel;
+                cv::cvtColor(rgb_pixel, hsv_pixel, cv::COLOR_RGB2HSV);
+
+                int h = hsv_pixel(0,0)[0];
+                int s = hsv_pixel(0,0)[1];
+                int v = hsv_pixel(0,0)[2];
+
+                String color_name = "?";
+                if(s < 70 && v > 100){
+                    color_name = "W";
+                }else{
+                    if(h < 5 || h > 165) color_name = "R";
+                    else if(h >= 5 && h < 16) color_name = "O";
+                    else if(h >= 16 && h < 38) color_name = "Y";
+                    else if(h >= 38 && h < 85) color_name = "G";
+                    else if(h >= 85 && h < 130) color_name = "B";
+                    else color_name = "R";
+                }
+                result_colors.push_back(color_name);
+            }
+        }
         return result_colors;
     }
 

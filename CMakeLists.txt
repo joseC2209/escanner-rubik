@@ -8,15 +8,22 @@ endif()
 set(LIBNAME "rubik_scanner") # "The name of the library"
 set(GODOT_PROJECT_DIR "project" CACHE STRING "The directory of a Godot project folder")
 
+project(godot-cpp-template
+    VERSION 1.0
+    DESCRIPTION "This repository serves as a quickstart template for GDExtension development with Godot 4.0+."
+    HOMEPAGE_URL "https://github.com/enetheru/godot-cpp-template/tree/main"
+    LANGUAGES CXX
+)
+
 # Make sure all the dependencies are satisfied
 find_package(Python3 3.4 REQUIRED)
 list(APPEND CMAKE_PREFIX_PATH "C:/msys64/ucrt64")
+
 find_package(OpenCV REQUIRED COMPONENTS core imgproc videoio)
-find_package(OpenCV REQUIRED)
-find_program(GIT git REQUIRED)
 
 # Ensure godot-cpp submodule has been updated
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/godot-cpp/src")
+    find_program(GIT git REQUIRED)
     message(NOTICE "godot-cpp bindings source not found")
     message(NOTICE "initializing/updating the godot-cpp submodule...")
 
@@ -44,14 +51,6 @@ include(GodotCPPModule)
 # The godot-cpp target has some of useful properties attached that can be retrieved like so.
 get_target_property(GODOTCPP_SUFFIX godot::cpp GODOTCPP_SUFFIX)
 get_target_property(GODOTCPP_PLATFORM godot::cpp GODOTCPP_PLATFORM)
-
-# Now we can specify our own project which will inherit any global cmake properties or variables that have been defined.
-project(godot-cpp-template
-    VERSION 1.0
-    DESCRIPTION "This repository serves as a quickstart template for GDExtension development with Godot 4.0+."
-    HOMEPAGE_URL "https://github.com/enetheru/godot-cpp-template/tree/main"
-    LANGUAGES CXX
-)
 
 add_library(${LIBNAME} SHARED)
 target_link_options(${LIBNAME} PRIVATE -static-libgcc -static-libstdc++)
@@ -96,7 +95,7 @@ set_target_properties(${LIBNAME}
 # Godot loads extension dependencies from the extension directory.
 set(MSYS2_BIN_DIR "C:/msys64/ucrt64/bin")
 
-if(EXISTS "${MSYS2_BIN_DIR}")
+if(WIN32 AND EXISTS "${MSYS2_BIN_DIR}")
     add_custom_command(TARGET ${LIBNAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
             "-DMSYS2_BIN_DIR=${MSYS2_BIN_DIR}"
@@ -104,3 +103,4 @@ if(EXISTS "${MSYS2_BIN_DIR}")
             -P "${PROJECT_SOURCE_DIR}/cmake/copy_runtime_dlls.cmake"
     )
 endif()
+
