@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://mo5b3mikuc38"]
+[gd_scene format=3 uid="uid://mo5b3mikuc38"]
 
 [ext_resource type="Script" uid="uid://bq343vf744845" path="res://node_2d.gd" id="1_wtcfe"]
 [ext_resource type="Script" uid="uid://bljtu4raaekd1" path="res://grid_overlay.gd" id="2_0e48y"]
@@ -24,16 +24,16 @@ corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[node name="Node2D" type="Node2D"]
+[node name="Node2D" type="Node2D" unique_id=1024773744]
 script = ExtResource("1_wtcfe")
 
-[node name="CameraScreen" type="TextureRect" parent="."]
+[node name="CameraScreen" type="TextureRect" parent="." unique_id=721347934]
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1477041167]
 
-[node name="GridOverlay" type="Control" parent="CanvasLayer"]
+[node name="GridOverlay" type="Control" parent="CanvasLayer" unique_id=357411119]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,7 +42,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_0e48y")
 
-[node name="FaceLabel" type="Label" parent="CanvasLayer"]
+[node name="FaceLabel" type="Label" parent="CanvasLayer" unique_id=1548645820]
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = 120.0
@@ -52,7 +52,7 @@ text = "Escanea la cara..."
 label_settings = SubResource("LabelSettings_0e48y")
 horizontal_alignment = 1
 
-[node name="CaptureButton" type="Button" parent="CanvasLayer"]
+[node name="CaptureButton" type="Button" parent="CanvasLayer" unique_id=187671923]
 custom_minimum_size = Vector2(250, 80)
 anchors_preset = 7
 anchor_left = 0.5
@@ -79,7 +79,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_0e48y")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_0e48y")
 text = "Capturar Cara"
 
-[node name="AndroidCamera" type="Node" parent="."]
+[node name="AndroidCamera" type="Node" parent="." unique_id=510156383]
 script = ExtResource("3_epypp")
 metadata/_custom_type_script = "uid://dgqu7xhbcqgf6"
 

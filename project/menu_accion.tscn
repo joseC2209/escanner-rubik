@@ -1,0 +1,116 @@
+[gd_scene format=3 uid="uid://b6xl37wyy1r1l"]
+
+[ext_resource type="Script" uid="uid://c1wgfctj4ylha" path="res://menu_accion.gd" id="1_yle17"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ul6ys"]
+bg_color = Color(0, 0, 0.654902, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.03436518, 0.07236806, 0.14653942, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yle17"]
+bg_color = Color(0, 0, 0.654902, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.03436518, 0.07236806, 0.14653942, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pvlhl"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.67230505, 1.7688051e-06, 6.256998e-07, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="MenuAccion" type="Control" unique_id=1363019804]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yle17")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1547024152]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.101960786, 0.16862746, 0.29803923, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1159753670]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1401232681]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=508350596]
+layout_mode = 2
+text = "¿Qué deseas hacer?"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1902327065]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SolucionOptima" type="Button" parent="MarginContainer/VBoxContainer/VBoxContainer" unique_id=1411975838]
+custom_minimum_size = Vector2(300, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5921569, 0.7254902, 1, 1)
+theme_override_colors/font_focus_color = Color(0.5921569, 0.7254902, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.5921569, 0.7254902, 1, 1)
+theme_override_colors/font_hover_color = Color(0.24313726, 0.47058824, 1, 1)
+theme_override_colors/font_hover_pressed_color = Color(0.24313726, 0.47058824, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.003921569, 0.23529412, 0.92941177, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_ul6ys")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_yle17")
+theme_override_styles/hover = SubResource("StyleBoxFlat_yle17")
+text = "Solución óptima"
+
+[node name="FilaInferior" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=669121485]
+layout_mode = 2
+alignment = 2
+
+[node name="BtnAtras" type="Button" parent="MarginContainer/VBoxContainer/FilaInferior" unique_id=410247164]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.42745098, 0.35686275, 1)
+theme_override_colors/font_focus_color = Color(1, 0.42745098, 0.35686275, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.42745098, 0.35686275, 1)
+theme_override_colors/font_hover_color = Color(1, 0.23137255, 0.17254902, 1)
+theme_override_colors/font_hover_pressed_color = Color(1, 0.23137255, 0.17254902, 1)
+theme_override_colors/font_disabled_color = Color(0.80784315, 0.047058824, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_pvlhl")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_pvlhl")
+theme_override_styles/hover = SubResource("StyleBoxFlat_pvlhl")
+text = "Atrás"
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/VBoxContainer/SolucionOptima" to="." method="_on_solucion_optima_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/FilaInferior/BtnAtras" to="." method="_on_btn_atras_pressed"]

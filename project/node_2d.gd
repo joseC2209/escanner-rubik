@@ -39,7 +39,6 @@ var color_cycle = ["W", "G", "R", "B", "O", "Y"]
 # Variables para Android
 var is_android : bool = false
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	is_android = (OS.get_name() == "Android")
 	
@@ -50,25 +49,37 @@ func _ready() -> void:
 
 	# Se crea el nodo que mostrará el vídeo de la cámara.
 	camera_sprite = Sprite2D.new()
-	camera_sprite.position = get_viewport_rect().size / 2.0
-	camera_sprite.z_index = 10
+	camera_sprite.z_index = -1
 	add_child(camera_sprite)
 	
 	# El fondo gris debe estar oculto al principio
 	camera_screeen.visible = false
 	
-	if is_android:
-		# Configuración Android
-		capture_button.size = Vector2(340, 100)
-		capture_button.position.x = (get_viewport_rect().size.x - capture_button.size.x) / 2.0
-		capture_button.position.y = get_viewport_rect().size.y - 250
-		
-		face_label.position.x = (get_viewport_rect().size.x - face_label.size.x) / 2.0
-		face_label.position.y = 180
-		
-		grid_overlay.square_size = 260.0
-		
-		# Nos aseguramos de conectar las señales del plugin
+	# Se pone el texto
+	update_ui_text()
+	
+	# Se construye una interfaz responsiva
+	var screen_size = get_viewport_rect().size
+	var base_size = min(screen_size.x, screen_size.y) # Lado más corto como referencia
+	
+	# Cada cuadrito de la cuadrícula ocupa un 22% del lado más corto de la pantalla
+	grid_overlay.square_size = base_size * 0.22
+	
+	# Al texto superior se le da el ancho total de la pantalla y se baja un 12%
+	face_label.size.x = screen_size.x
+	face_label.position.x = 0
+	face_label.position.y = screen_size.y * 0.12
+	face_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER # Se centra automáticamente
+	
+	# Al botón de Capturar se le da un ancho del 60% (máximo 340px para que no sea gigante) y altura del 10%
+	var btn_width = min(screen_size.x * 0.6, 340.0)
+	var btn_height = base_size * 0.1
+	capture_button.size = Vector2(btn_width, btn_height)
+	capture_button.position.x = (screen_size.x - capture_button.size.x) / 2.0
+	capture_button.position.y = screen_size.y * 0.85 # Se coloca al 85% de la pantalla (abajo)
+	
+	if is_android:		
+		# Deben estar conectadas las señales del plugin
 		if not android_camera.camera_permission_granted.is_connected(_on_android_camera_camera_permission_granted):
 			android_camera.camera_permission_granted.connect(_on_android_camera_camera_permission_granted)
 		if not android_camera.camera_permission_denied.is_connected(_on_android_camera_camera_permission_denied):
@@ -76,22 +87,15 @@ func _ready() -> void:
 		if not android_camera.frame_available.is_connected(_on_android_camera_frame_available):
 			android_camera.frame_available.connect(_on_android_camera_frame_available)
 
-		# Se verifican permisos a través de la API del plugin
+		# Deben darse los permisos a través de la API del plugin
 		if android_camera.has_camera_permission():
 			iniciar_camara_android()
 		else:
 			android_camera.request_camera_permission()
 		
 	else:
-		# Configuración Windows
-		capture_button.position.y = 548
-		capture_button.size = Vector2(258, 80)
-		face_label.position.y = 32
-		grid_overlay.square_size = 140.0
-
 		# Encendido de la cámara a través de OpenCV en Windows.
 		scanner.open_camera()
-		update_ui_text()
 
 # Señal conectada desde el nodo NativeCamera. Se dispara si el usuario pulsa "Permitir"
 func _on_android_camera_camera_permission_granted() -> void:
@@ -190,7 +194,6 @@ func _on_android_camera_frame_available(frame) -> void:
 	if face_label.text.is_empty() or not face_label.text.begins_with("Escanea"):
 		update_ui_text()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	if not is_android and scanner and current_state == AppState.SCANNING:
 		# En Windows se usa OpenCV nativo directo
@@ -213,7 +216,11 @@ func procesar_fotograma_para_colores(img: Image) -> void:
 				
 	var screen_size = get_viewport_rect().size
 	var cam_size = Vector2(img.get_width(), img.get_height())
-	camera_sprite.scale = Vector2(screen_size.x / cam_size.x, screen_size.y / cam_size.y)
+	
+	# Se calcula el factor de escala uniforme usando min, ya que encaja toda la imagen dejando márgenes negros
+	var scale_factor = min(screen_size.x / cam_size.x, screen_size.y / cam_size.y)
+	
+	camera_sprite.scale = Vector2(scale_factor, scale_factor)
 	camera_sprite.position = screen_size / 2.0
 
 	# Se obtienen los rectángulos dibujados en la interfaz

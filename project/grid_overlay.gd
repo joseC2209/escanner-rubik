@@ -10,7 +10,6 @@ var current_colors : Array = [] # Guarda las letras detectadas
 # Controla si está en la pantalla de revisión
 var is_reviewing: bool = false
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	# El nodo se redibuja si la ventana cambia de tamaño
 	get_tree().get_root().size_changed.connect(queue_redraw)
@@ -83,6 +82,5 @@ func get_grid_rects() -> Array:
 	return rects
 
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass

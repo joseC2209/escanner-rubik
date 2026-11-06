@@ -24,7 +24,6 @@ var secuencia_movimientos = []
 var paso_actual = 0
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	if Global.colores_cubo.size() == 6:
 		generar_colores_escaneados(Global.colores_cubo)
@@ -281,6 +280,5 @@ func anadir_pegatina(padre: Node3D, pos_relativa: Vector3, rotacion_grados: Vect
 	pegatina.position = pos_relativa
 	pegatina.rotation_degrees = rotacion_grados
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	pass
