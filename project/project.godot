@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 Global="*res://Global.gd"
+NavegacionGlobal="*uid://ckx3hm1tmaieo"
 
 [display]
 

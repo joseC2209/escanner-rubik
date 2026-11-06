@@ -26,17 +26,6 @@ corner_radius_top_right = 16
 corner_radius_bottom_right = 16
 corner_radius_bottom_left = 16
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pvlhl"]
-content_margin_left = 20.0
-content_margin_top = 10.0
-content_margin_right = 20.0
-content_margin_bottom = 10.0
-bg_color = Color(0.67230505, 1.7688051e-06, 6.256998e-07, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-
 [node name="MenuAccion" type="Control" unique_id=1363019804]
 layout_mode = 3
 anchors_preset = 15
@@ -94,23 +83,4 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_yle17")
 theme_override_styles/hover = SubResource("StyleBoxFlat_yle17")
 text = "Solución óptima"
 
-[node name="FilaInferior" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=669121485]
-layout_mode = 2
-alignment = 2
-
-[node name="BtnAtras" type="Button" parent="MarginContainer/VBoxContainer/FilaInferior" unique_id=410247164]
-custom_minimum_size = Vector2(120, 50)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.42745098, 0.35686275, 1)
-theme_override_colors/font_focus_color = Color(1, 0.42745098, 0.35686275, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.42745098, 0.35686275, 1)
-theme_override_colors/font_hover_color = Color(1, 0.23137255, 0.17254902, 1)
-theme_override_colors/font_hover_pressed_color = Color(1, 0.23137255, 0.17254902, 1)
-theme_override_colors/font_disabled_color = Color(0.80784315, 0.047058824, 0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_pvlhl")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_pvlhl")
-theme_override_styles/hover = SubResource("StyleBoxFlat_pvlhl")
-text = "Atrás"
-
 [connection signal="pressed" from="MarginContainer/VBoxContainer/VBoxContainer/SolucionOptima" to="." method="_on_solucion_optima_pressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/FilaInferior/BtnAtras" to="." method="_on_btn_atras_pressed"]

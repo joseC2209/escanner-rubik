@@ -120,9 +120,11 @@ fit_content = true
 horizontal_alignment = 1
 
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer" unique_id=806038744]
-offset_top = 577.0
-offset_right = 1152.0
-offset_bottom = 648.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -102.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/margin_left = 20
@@ -172,6 +174,14 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_wmgkb")
 theme_override_styles/hover = SubResource("StyleBoxFlat_wmgkb")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_k1p6c")
 text = "Siguiente"
+
+[node name="ReescanearContainer" type="CenterContainer" parent="CanvasLayer/MarginContainer" unique_id=946494947]
+layout_mode = 2
+
+[node name="BtnReescanear" type="Button" parent="CanvasLayer/MarginContainer/ReescanearContainer" unique_id=867883540]
+layout_mode = 2
+focus_mode = 0
+text = "Reescanear"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=66251391]
 environment = SubResource("Environment_pvlhl")

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dk5xmq4pgatol"]
 
 [ext_resource type="Script" uid="uid://cyjfbacnxl2c8" path="res://menu_principal.gd" id="1_bj1uy"]
-[ext_resource type="Texture2D" uid="uid://ck4pdo7sflmhv" path="res://cubo_2x2x2.png" id="2_gmcsc"]
+[ext_resource type="Texture2D" uid="uid://kj77e4j1qwqp" path="res://iconos/cubo_2x2x2.svg" id="2_gmcsc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ul6ys"]
 bg_color = Color(0, 0, 0.654902, 1)

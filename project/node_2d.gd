@@ -62,8 +62,11 @@ func _ready() -> void:
 	var screen_size = get_viewport_rect().size
 	var base_size = min(screen_size.x, screen_size.y) # Lado más corto como referencia
 	
-	# Cada cuadrito de la cuadrícula ocupa un 22% del lado más corto de la pantalla
-	grid_overlay.square_size = base_size * 0.22
+	# Se aplica el estilo común l botón de captura y confirmación
+	EstilosBotones.aplicar_estilo_azul(capture_button, base_size)
+	
+	# Cada cuadrito de la cuadrícula ocupa un 27% del lado más corto de la pantalla
+	grid_overlay.square_size = base_size * 0.27
 	
 	# Al texto superior se le da el ancho total de la pantalla y se baja un 12%
 	face_label.size.x = screen_size.x
@@ -315,3 +318,8 @@ func _input(event: InputEvent) -> void:
 				grid_overlay.update_detected_colors(current_scanned_colors)
 				get_viewport().set_input_as_handled()
 				break
+
+func _exit_tree() -> void:
+	# Se libera la cámara de Android cuando se abandona la escena de escaneo
+	if is_android and is_instance_valid(android_camera):
+		android_camera.stop()

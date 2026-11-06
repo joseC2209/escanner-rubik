@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://ckx3hm1tmaieo"]
+
+[ext_resource type="Script" uid="uid://cexppu5o4hcw7" path="res://navegacion_global.gd" id="1_i01s0"]
+
+[node name="NavegacionGlobal" type="CanvasLayer" unique_id=1901080084]
+layer = 10
+script = ExtResource("1_i01s0")
+
+[node name="ContenedorInicio" type="Control" parent="." unique_id=2070835883]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BtnInicio" type="Button" parent="ContenedorInicio" unique_id=1838237026]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -50.0
+offset_bottom = 31.0
+grow_horizontal = 0
+tooltip_text = "Inicio"
+focus_mode = 0

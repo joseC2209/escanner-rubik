@@ -63,7 +63,8 @@ func _update_layout() -> void:
 		if btn is Button:
 			btn.custom_minimum_size = Vector2(btn_width, btn_height)
 			btn.add_theme_font_size_override("font_size", maxi(1, roundi(base_size * 0.032)))
-
+			# Se aplica el estilo común de las opciones de selección
+			EstilosBotones.aplicar_estilo_azul(btn, base_size, true)
 
 func _process(delta: float) -> void:
 	pass

@@ -19,9 +19,28 @@ var ejes_rotacion = {
 @onready var btn_siguiente = $CanvasLayer/MarginContainer/HBoxContainer/CenterContainer2/BtnSiguiente
 @onready var move_label = $CanvasLayer/MarginContainer2/MoveLabel
 
+# Contenedor de los botones de navegación de la solución
+@onready var navigation_container = $CanvasLayer/MarginContainer
+
+# Cámara que muestra el cubo durante la solución
+@onready var cube_camera = $Camera3D
+
+# Contenedor superior de la secuencia de movimientos de la solución
+@onready var solution_container = $CanvasLayer/MarginContainer2
+
+# Controles que permiten repetir la captura cuando el cubo es irresoluble
+@onready var rescan_container = $CanvasLayer/MarginContainer/ReescanearContainer
+@onready var rescan_button = $CanvasLayer/MarginContainer/ReescanearContainer/BtnReescanear
+
 # Cola de movimientos
 var secuencia_movimientos = []
 var paso_actual = 0
+
+# Radio que contiene todas las piezas del cubo durante las rotaciones
+var cube_radius: float = 0.0
+
+# Indica que el resultado devuelto es un cubo irresoluble
+var solution_error: bool = false
 
 
 func _ready() -> void:
@@ -37,6 +56,127 @@ func _ready() -> void:
 	else:
 		# Caso de prueba
 		cargar_solucion("U F2 R' U'")
+	
+	# Se calcula el tamaño del cubo antes de ajustar el encuadre
+	cube_radius = _calculate_cube_radius()
+	
+	# Se adapta la interfaz al iniciar y cuando cambia el tamaño de pantalla
+	get_viewport().size_changed.connect(_update_layout)
+	_update_layout()
+	
+	# Se conecta el botón que permite repetir el escaneo
+	rescan_button.pressed.connect(_on_rescan_button_pressed)
+
+func _calculate_cube_radius() -> float:
+	var radius = 0.0
+	
+	# Se busca el vértice de las piezas más alejado del centro del cubo
+	for cubie in piezas_container.get_children():
+		var bounds = cubie.get_aabb()
+		
+		for corner_index in range(8):
+			var corner = cubie.transform * bounds.get_endpoint(corner_index)
+			radius = maxf(radius, corner.length())
+			
+	return radius
+
+func _update_layout() -> void:
+	var screen_size = get_viewport().get_visible_rect().size
+	var base_size = minf(screen_size.x, screen_size.y)
+	
+	# La franja de navegación es amplia para los botnes
+	navigation_container.offset_left = 0.0
+	navigation_container.offset_right = 0.0
+	navigation_container.offset_top = -screen_size.y * 0.22
+	navigation_container.offset_bottom = 0.0
+	
+	# Se calculan los márgenes interiores usando el lado más corto
+	var margin = roundi(base_size * 0.04)
+	for side in ["left", "top", "right", "bottom"]:
+		navigation_container.add_theme_constant_override("margin_" + side, margin)
+
+	# Se separan los controles del borde inferior un 6% de la altura
+	navigation_container.add_theme_constant_override("margin_bottom", roundi(screen_size.y * 0.06))
+
+	# Se reserva la zona superior para mostrar la solución
+	solution_container.anchor_left = 0.0
+	solution_container.anchor_right = 1.0
+	solution_container.anchor_top = 0.0
+	solution_container.anchor_bottom = 0.22
+	
+	# Se eliminan las dimensiones fijas del contenedor
+	solution_container.offset_left = 0.0
+	solution_container.offset_right = 0.0
+	solution_container.offset_top = 0.0
+	solution_container.offset_bottom = 0.0
+	
+	# Se separa la solución del borde superior un 6% de la altura
+	solution_container.add_theme_constant_override("margin_top", roundi(screen_size.y * 0.06))
+	
+	# Se reserva espacio en los laterales para que el texto no coincida con el botón de Inicio
+	var solution_side_margin = roundi(base_size * 0.20)
+	
+	for side in ["left", "right"]:
+		solution_container.add_theme_constant_override("margin_" + side, solution_side_margin)
+	
+	# Se permite repartir los movimientos y los mensajes en más de una línea
+	move_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	
+	# Se aplica el mismo tamaño al texto normal y al movimiento actual
+	var solution_font_size = maxi(1, roundi(base_size * 0.045))
+	move_label.add_theme_font_size_override("normal_font_size", solution_font_size)
+	move_label.add_theme_font_size_override("bold_font_size", solution_font_size)
+	
+	# Se reparte el ancho entre las dos mitades sin separación extra
+	var navigation_row = navigation_container.get_node("HBoxContainer")
+	navigation_row.add_theme_constant_override("separation", 0)
+	
+	for half in navigation_row.get_children():
+		half.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		half.size_flags_stretch_ratio = 1.0
+	
+	# Se limita el ancho del botón al espacio disponible en su mitad
+	var half_width = maxf(0.0, (screen_size.x - margin * 2.0) / 2.0)
+	var button_width = minf(base_size * 0.32, half_width * 0.85)
+	var button_height = base_size * 0.10
+	var button_font_size = maxi(1, roundi(base_size * 0.035))
+	
+	# Se aplica el mismo tamaño a los dos botones Anterior y Siguiente
+	for button in [btn_anterior, btn_siguiente]:
+		button.custom_minimum_size = Vector2(button_width, button_height)
+		button.add_theme_font_size_override("font_size", button_font_size)
+	
+	EstilosBotones.aplicar_estilo_navegacion(btn_anterior, base_size, true)
+	EstilosBotones.aplicar_estilo_navegacion(btn_siguiente, base_size, false)
+	
+	# Se adapta el botón de reescaneo a la zona inferior
+	rescan_button.custom_minimum_size = Vector2(minf(base_size * 0.60, half_width * 2.0), button_height)
+	rescan_button.add_theme_font_size_override("font_size", button_font_size)
+	
+	# Se aplica el mismo estilo usado para capturar y confirmar
+	EstilosBotones.aplicar_estilo_azul(rescan_button, base_size)
+	
+	# Se obtiene el campo de visión real según la ventana
+	var camera_projection = cube_camera.get_camera_projection()
+	
+	# Se calcula el espacio horizontal disponible entre los márgenes
+	var horizontal_space = (screen_size.x - margin * 2.0) / screen_size.x
+	
+	# Se reserva espacio entre la zona superior y la navegación inferior
+	var central_top = 0.22
+	var central_bottom = 1.0 - 0.22
+	var vertical_space = minf(0.5 - central_top, central_bottom - 0.5) * 2.0
+	
+	# Se deja un margen extra alrededor del cubo para facilitar la lectura
+	var framing_space = minf(horizontal_space / camera_projection.x.x, vertical_space / camera_projection.y.y) * 0.85
+	
+	# Se calcula la distancia necesaria para encajar la esfera del cubo
+	var half_angle = atan(framing_space)
+	var camera_distance = cube_radius / sin(half_angle)
+	
+	# Se conserva la dirección de observación y se adapta la distancia
+	cube_camera.position = cube_camera.position.normalized() * camera_distance
+	cube_camera.look_at(Vector3.ZERO, Vector3.UP)
 
 func rotate_face(face_name: String, turns: int):
 	if is_animating:
@@ -95,6 +235,14 @@ func _on_rotation_finished(piezas_giradas: Array):
 func cargar_solucion(solucion_str: String):
 	secuencia_movimientos.clear()
 	paso_actual = 0
+	
+	# Se detecta el error antes de interpretar el texto como movimientos
+	solution_error = solucion_str.strip_edges().begins_with("Error:")
+	
+	if solution_error:
+		actualizar_ui()
+		return
+	
 	if solucion_str == "Cubo ya resuelto":
 		actualizar_ui()
 		return
@@ -120,6 +268,14 @@ func cargar_solucion(solucion_str: String):
 	actualizar_ui()
 	
 func actualizar_ui():
+	# Se alterna entre los controles del paso a paso y el botón de reescaneo
+	navigation_container.get_node("HBoxContainer").visible = not solution_error
+	rescan_container.visible = solution_error
+	
+	if solution_error:
+		move_label.text = "[center][color=#b83a42][b]Error: Cubo irresoluble. Por favor, vuelva a escanear el cubo[/b][/color][/center]"
+		return
+	
 	# Si no hay movimientos o el cubo está ya resuelto
 	if secuencia_movimientos.is_empty():
 		move_label.text = "[center]Cubo resuelto[/center]"
@@ -271,14 +427,25 @@ func anadir_pegatina(padre: Node3D, pos_relativa: Vector3, rotacion_grados: Vect
 	
 	var mat = StandardMaterial3D.new()
 	mat.albedo_color = color
-	# Se hace que el color sea puro y no se vea alterado demasiado por las sombras
-	mat.roughness = 0.3
+	# Se muestra el color de la pegatina sin alteraciones por luces o sombras
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mesh.material = mat
 	
 	pegatina.mesh = mesh
 	padre.add_child(pegatina)
 	pegatina.position = pos_relativa
 	pegatina.rotation_degrees = rotacion_grados
+
+func _on_rescan_button_pressed() -> void:
+	# Se evita repetir la navegación por varias pulsaciones seguidas
+	rescan_button.disabled = true
+	
+	# Se abre una nueva escena de escaneo con sus capturas vacías
+	var error = get_tree().change_scene_to_file("res://node_2d.tscn")
+	
+	if error != OK:
+		rescan_button.disabled = false
+		push_error("No se ha podido abrir el escáner: " + error_string(error))
 
 func _process(delta: float) -> void:
 	pass

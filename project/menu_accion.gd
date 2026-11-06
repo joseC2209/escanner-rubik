@@ -6,7 +6,6 @@ extends Control
 @onready var title_label = $MarginContainer/VBoxContainer/Label
 @onready var actions_column = $MarginContainer/VBoxContainer/VBoxContainer
 @onready var solution_button = $MarginContainer/VBoxContainer/VBoxContainer/SolucionOptima
-@onready var back_button = $MarginContainer/VBoxContainer/FilaInferior/BtnAtras
 
 func _ready() -> void:
 	# Se actualiza la interfaz cuando cambia el tamaño
@@ -50,17 +49,12 @@ func _update_layout() -> void:
 	)
 	solution_button.add_theme_font_size_override("font_size", maxi(1, roundi(base_size * 0.035)))
 	
-	# Se mantiene el botón Atrás con un tamaño proporcional al resto
-	back_button.custom_minimum_size = Vector2(base_size * 0.24, base_size * 0.1)
-	back_button.add_theme_font_size_override("font_size", maxi(1, roundi(base_size * 0.032)))
-
+	# Se aplica el mismo estilo a la opción de resolución
+	EstilosBotones.aplicar_estilo_azul(solution_button, base_size, true)
+	
 func _process(delta: float) -> void:
 	pass
 
 
 func _on_solucion_optima_pressed() -> void:
 	get_tree().change_scene_to_file("res://node_2d.tscn")
-
-
-func _on_btn_atras_pressed() -> void:
-	get_tree().change_scene_to_file("res://menu_principal.tscn")
