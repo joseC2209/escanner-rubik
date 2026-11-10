@@ -69,19 +69,34 @@ uint8_t RubikSolver::identify_piece(char c1, char c2, char c3, char u, char d, c
     if(hasD && hasF && hasL) return 6; // DFL = Abajo-Frente-Izquierda
     if(hasD && hasF && hasR) return 7; // DFR = Abajo-Frente-Derecha
 
-    return 0;
+    return 8; // Ninguna de las ocho piezas coincide con estos colores
 }
 
 void RubikSolver::load_from_colors(Array faces){
+    // Se comprueba que el escaneo contiene seis caras
+    if(faces.size() != 6){
+        return;
+    }
+
     String color_string = "";
 
     // Se recorren las 6 caras
     for(int i = 0; i < faces.size(); i++){
         Array face = faces[i];
 
+        // Se comprueba que cada cara contiene cuatro pegatinas
+        if(face.size() != 4){
+            return;
+        }
+
         // Se recorren los 4 colores de la cara
         for(int j = 0; j < face.size(); j++){
-            color_string += face[j].operator String();
+            // Cada pegatina debe tener un único código de color válido
+            const String color = face[j].operator String();
+            if(color.length() != 1 || String("WYGBRO").find(color) == -1){
+                return;
+            }
+            color_string += color;
         }
     }
 
@@ -109,6 +124,18 @@ void RubikSolver::load_from_colors(Array faces){
     char r_col = get_opposite_color(l_col);
     char f_col = get_opposite_color(b_col);
 
+    // Colores de cada pieza en orientación 0, en el mismo orden que corners_idx
+    const char colores_por_pieza[8][3] = {
+        {u_col, b_col, l_col},
+        {u_col, r_col, b_col},
+        {u_col, l_col, f_col},
+        {u_col, f_col, r_col},
+        {d_col, l_col, b_col},
+        {d_col, b_col, r_col},
+        {d_col, f_col, l_col},
+        {d_col, r_col, f_col},
+    };
+
     for(int i = 0; i < 8; i++){
         char c1 = color_string[corners_idx[i][0]];
         char c2 = color_string[corners_idx[i][1]];
@@ -123,6 +150,16 @@ void RubikSolver::load_from_colors(Array faces){
         } // Si está en c3, ha rotado en sentido horario
         else if(c3 == u_col || c3 == d_col){
             orientation = 2;
+        }
+
+        // Una esquina válida solo admite rotaciones cíclicas de sus colores
+        if(piece_id < 8){
+            const auto &colores = colores_por_pieza[piece_id];
+            const int inicio = (3 - orientation) % 3;
+
+            if(c1 != colores[inicio] || c2 != colores[(inicio + 1) % 3] || c3 != colores[(inicio + 2) % 3]){
+                piece_id = 8;
+            }
         }
 
         state[i].piece = piece_id;
@@ -188,6 +225,24 @@ uint64_t RubikSolver::encode_state() const{
 }
 
 String RubikSolver::solve(){
+    // Se registra qué piezas aparecen en el cubo
+    bool piezas_vistas[8] = {};
+
+    // Los giros legales conservan la suma de operaciones módulo 3
+    int suma_orientaciones = 0;
+    for(const CubeCorner &esquina : state){
+        // Se rechazan las piezas desconocidas o repetidas
+        if(esquina.piece >= 8 || piezas_vistas[esquina.piece]){
+            return "Error: Cubo irresoluble. Revisa el escaneo.";
+        }
+        piezas_vistas[esquina.piece] = true;
+        suma_orientaciones += esquina.orientation;
+    }
+
+    if(suma_orientaciones % 3 != 0){
+        return "Error: Cubo irresoluble. Revisa el escaneo.";
+    }
+
     uint64_t start_hash = encode_state();
     
     // Se guarda el estado inicial en un backup y se obtiene el hash del cubo resuelto

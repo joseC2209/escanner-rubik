@@ -62,6 +62,9 @@ compile_commands.json
 cmake-build*
 CMakeUserPresets.json
 
-# Generated Godot Android template libraries (install via Android build templates)
-/project/android/build/libs/debug/godot-lib.template_debug.aar
-/project/android/build/libs/release/godot-lib.template_release.aar
+# Recursos generados al exportar la aplicación Android
+/project/android/build/src/main/assets/
+
+# Archivos temporales del editor
+*.tmp
+*.TMP

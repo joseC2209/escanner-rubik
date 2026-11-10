@@ -98,6 +98,7 @@ set(MSYS2_BIN_DIR "C:/msys64/ucrt64/bin")
 if(WIN32 AND EXISTS "${MSYS2_BIN_DIR}")
     add_custom_command(TARGET ${LIBNAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND}
+            "-DEXTENSION_FILE=$<TARGET_FILE:${LIBNAME}>"
             "-DMSYS2_BIN_DIR=${MSYS2_BIN_DIR}"
             "-DDEST_DIR=${GODOT_PROJECT_BINARY_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/copy_runtime_dlls.cmake"
