@@ -95,6 +95,14 @@ set_target_properties(${LIBNAME}
     OUTPUT_NAME "${LIBNAME}${GODOTCPP_SUFFIX}"
 )
 
+# En Android, se genera la biblioteca en la ruta que espera Godot.
+if(ANDROID)
+    set_target_properties(${LIBNAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${GODOT_PROJECT_BINARY_DIR}"
+        PREFIX "lib"
+    )
+endif()
+
 # Godot loads extension dependencies from the extension directory.
 set(MSYS2_BIN_DIR "${UCRT64_ROOT}/bin")
 

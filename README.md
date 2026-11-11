@@ -73,6 +73,19 @@ del repositorio.
 El script ejecuta cuatro casos y muestra la longitud de la solución
 devuelta y los tiempos mínimo, mediano y máximo de 21 mediciones por caso.
 
+## Recompilación para Android
+
+Una vez configurado `build_android` con el Android NDK y el SDK de
+OpenCV para Android, recompila la extensión desde la raíz del repositorio.
+
+```powershell
+cmake --build build_android --target rubik_scanner
+```
+
+En la configuración ARM64 de depuración, CMake genera directamente
+`project/bin/android/librubik_scanner.android.template_debug.arm64.so`.
+Después de compilar, exporta la APK de depuración desde Godot con Gradle.
+
 ## Integración continua
 
 El flujo [Continuous Integration](.github/workflows/ci.yml) se ejecuta
