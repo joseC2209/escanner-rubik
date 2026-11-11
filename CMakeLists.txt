@@ -17,7 +17,10 @@ project(godot-cpp-template
 
 # Make sure all the dependencies are satisfied
 find_package(Python3 3.4 REQUIRED)
-list(APPEND CMAKE_PREFIX_PATH "C:/msys64/ucrt64")
+
+# Ruta de UCRT64. Se puede indicar otra al configurar CMake.
+set(UCRT64_ROOT "C:/msys64/ucrt64" CACHE PATH "Ruta de MSYS2 UCRT64")
+list(APPEND CMAKE_PREFIX_PATH "${UCRT64_ROOT}")
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc videoio)
 
@@ -93,7 +96,7 @@ set_target_properties(${LIBNAME}
 )
 
 # Godot loads extension dependencies from the extension directory.
-set(MSYS2_BIN_DIR "C:/msys64/ucrt64/bin")
+set(MSYS2_BIN_DIR "${UCRT64_ROOT}/bin")
 
 if(WIN32 AND EXISTS "${MSYS2_BIN_DIR}")
     add_custom_command(TARGET ${LIBNAME} POST_BUILD

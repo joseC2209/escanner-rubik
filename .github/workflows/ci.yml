@@ -10,32 +10,7 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        # Test a few selected combinations of parameters ("test case matrix").
-        # While it would be nice to test all needed combinations, in practice this would a waste of CI usage time.
-        # By building just with a few combinations, we only need a few runners,
-        # while still achieving adequate coverage.
-        # To make a full build with all combinations, use the make_build.yml workflow instead.
-        include:
-          - target: { platform: linux, arch: x86_64, os: ubuntu-22.04 }
-            target-type: template_debug
-            float-precision: double
-          - target: { platform: windows, arch: x86_64, os: windows-latest }
-            target-type: template_release
-            float-precision: single
-          - target: { platform: macos, arch: universal, os: macos-latest }
-            target-type: template_debug
-            float-precision: single
-          - target: { platform: android, arch: arm64, os: ubuntu-22.04 }
-            target-type: template_debug
-            float-precision: single
-          - target: { platform: web, arch: wasm32, os: ubuntu-22.04 }
-            target-type: template_release
-            float-precision: double
-
-    runs-on: ${{ matrix.target.os }}
+    runs-on: windows-latest
     steps:
       # Clone this repository
       - name: Checkout
@@ -43,46 +18,65 @@ jobs:
         with:
           submodules: true
 
-      # Lint
-      #- name: Setup clang-format
-      #  shell: bash
-      #  run: |
-      #    python -m pip install clang-format
-      #- name: Run clang-format
-      #  shell: bash
-      #  run: |
-      #    clang-format src/** --dry-run --Werror
-
-      # Add linux x86_32 toolchain
-      - name: Install multilib support
-        if: ${{ matrix.target.platform == 'linux' && matrix.target.arch == 'x86_32' }}
-        run: |
-          sudo apt-get update && sudo apt-get install -y gcc-multilib g++-multilib
-
-      # Setup dependencies
-      - name: Setup godot-cpp
-        uses: ./godot-cpp/.github/actions/setup-godot-cpp
+      - name: Instalar dependencias de Windows
+        id: msys2
+        uses: msys/setup-msys2@v2
         with:
-          platform: ${{ matrix.target.platform }}
-          em-version: 3.1.62
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-binutils
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-make
+            mingw-w64-ucrt-x86_64-python
+            mingw-w64-ucrt-x86_64-opencv
 
-      # Build GDExtension (with caches)
-
-      - name: Restore .scons_cache
-        uses: ./godot-cpp/.github/actions/godot-cache-restore
-        with:
-          scons-cache: ${{ github.workspace }}/.scons-cache/
-          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.float-precision }}_${{ matrix.target-type }}
-
-      - name: Build GDExtension Debug Build
-        shell: sh
+      - name: Compilar la extensión de Windows
+        shell: pwsh
         env:
-          SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
         run: |
-          scons target=${{ matrix.target-type }} platform=${{ matrix.target.platform }} arch=${{ matrix.target.arch }} precision=${{ matrix.float-precision }}
+          $ucrt64 = Join-Path $env:MSYS2_LOCATION 'ucrt64'
+          $env:Path = "$(Join-Path $ucrt64 'bin');$env:Path"
 
-      - name: Save .scons_cache
-        uses: ./godot-cpp/.github/actions/godot-cache-save
-        with:
-          scons-cache: ${{ github.workspace }}/.scons-cache/
-          cache-name: ${{ matrix.target.platform }}_${{ matrix.target.arch }}_${{ matrix.float-precision }}_${{ matrix.target-type }}
+          cmake -S . -B build-ci -G "MinGW Makefiles" `
+            "-DCMAKE_BUILD_TYPE=Debug" `
+            "-DGODOTCPP_TARGET=template_debug" `
+            "-DUCRT64_ROOT=$ucrt64"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          cmake --build build-ci --target rubik_scanner --parallel 2
+          exit $LASTEXITCODE
+
+      - name: Descargar Godot 4.7.2
+        shell: pwsh
+        run: |
+          $archivo = 'Godot_v4.7.2-stable_win64.exe.zip'
+          $zip = Join-Path $env:RUNNER_TEMP $archivo
+          $destino = Join-Path $env:RUNNER_TEMP 'godot-4.7.2'
+
+          Invoke-WebRequest `
+            -Uri "https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/$archivo" `
+            -OutFile $zip
+          Expand-Archive -LiteralPath $zip -DestinationPath $destino
+
+          $godot = Get-ChildItem -LiteralPath $destino -Recurse -File `
+            -Filter '*_console.exe' | Select-Object -First 1
+          if (-not $godot) { throw 'No se encontró el ejecutable de consola de Godot' }
+
+          "GODOT_EXE=$($godot.FullName)" >> $env:GITHUB_ENV
+
+      - name: Ejecutar las pruebas del solucionador
+        shell: pwsh
+        run: |
+          $proyecto = Join-Path $env:GITHUB_WORKSPACE 'project'
+          $dlls = Join-Path $proyecto 'bin/windows'
+          $env:Path = "$dlls;$env:Path"
+
+          & $env:GODOT_EXE --headless --path $proyecto --import
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          & $env:GODOT_EXE --headless --path $proyecto `
+            --script 'res://tests/test_rubik_solver.gd'
+          exit $LASTEXITCODE
