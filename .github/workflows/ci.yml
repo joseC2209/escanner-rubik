@@ -20,7 +20,7 @@ jobs:
 
       - name: Instalar dependencias de Windows
         id: msys2
-        uses: msys/setup-msys2@v2
+        uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
           update: true
