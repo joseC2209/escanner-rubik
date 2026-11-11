@@ -74,9 +74,14 @@ jobs:
           $dlls = Join-Path $proyecto 'bin/windows'
           $env:Path = "$dlls;$env:Path"
 
-          & $env:GODOT_EXE --headless --path $proyecto --import
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+                    & $env:GODOT_EXE --headless --verbose --path $proyecto --import
+          $codigoImportacion = $LASTEXITCODE
+          Write-Host "Codigo de importacion: $codigoImportacion"
 
           & $env:GODOT_EXE --headless --path $proyecto `
             --script 'res://tests/test_rubik_solver.gd'
-          exit $LASTEXITCODE
+          $codigoPruebas = $LASTEXITCODE
+          Write-Host "Codigo de las pruebas: $codigoPruebas"
+
+          if ($codigoPruebas -ne 0) { exit $codigoPruebas }
+          exit $codigoImportacion
