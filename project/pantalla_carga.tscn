@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://ckg01ec64klwb"]
+
+[ext_resource type="Script" uid="uid://cmqjbuwdc5lau" path="res://pantalla_carga.gd" id="1_7bcea"]
+[ext_resource type="Script" uid="uid://cx4cv3ut5gdcv" path="res://rueda_carga.gd" id="1_t8vtf"]
+
+[node name="PantallaCarga" type="Control" unique_id=374715519]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7bcea")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=653771583]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.101960786, 0.16862746, 0.29803923, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1014834706]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1591737107]
+layout_mode = 2
+
+[node name="RuedaCarga" type="Control" parent="CenterContainer/VBoxContainer" unique_id=695305201]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("1_t8vtf")
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer" unique_id=767825546]
+layout_mode = 2
+text = "Iniciando aplicación…"

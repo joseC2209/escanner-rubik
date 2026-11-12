@@ -69,7 +69,10 @@ func _update_visibility() -> void:
 	home_button.disabled = false
 	
 	# Se muestra el icono de inicio solo cuando hay otra pantalla
-	home_button.visible = (current_scene != null and current_scene.scene_file_path!= "res://menu_principal.tscn")
+	home_button.visible = (
+		current_scene != null and
+		current_scene.scene_file_path!= "res://menu_principal.tscn" and 
+		current_scene.scene_file_path != "res://pantalla_carga.tscn")
 
 func on_home_button_pressed() -> void:
 	# Se impiden nuevas pulsaciones mientras se cambia de pantalla

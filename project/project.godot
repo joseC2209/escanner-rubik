@@ -14,10 +14,12 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 [application]
 
-config/name="godot cpp template"
-run/main_scene="uid://dk5xmq4pgatol"
+config/name="Escáner Rubik"
+run/main_scene="res://pantalla_carga.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0.101960786, 0.16862746, 0.29803923, 1)
+boot_splash/show_image=false
+config/icon="res://iconos/logo_app.png"
 
 [autoload]
 
