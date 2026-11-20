@@ -66,9 +66,5 @@ func _update_layout() -> void:
 			# Se aplica el estilo común de las opciones de selección
 			EstilosBotones.aplicar_estilo_azul(btn, base_size, true)
 
-func _process(delta: float) -> void:
-	pass
-
-
 func _on_button_pressed() -> void:
 	get_tree().change_scene_to_file("res://menu_accion.tscn")

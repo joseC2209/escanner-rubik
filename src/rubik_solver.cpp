@@ -165,8 +165,6 @@ void RubikSolver::load_from_colors(Array faces){
         state[i].piece = piece_id;
         state[i].orientation = orientation;
     }
-
-    UtilityFunctions::print("Cubo mapeado matemáticamente: ", get_state_string());
 }
 
 void RubikSolver::rotate_U(){

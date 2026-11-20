@@ -1,11 +1,9 @@
 #include "scanner_core.h"
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 
 namespace godot{
 
     void ScannerCore::_bind_methods(){
-        ClassDB::bind_method(D_METHOD("test_connection"), &ScannerCore::test_connection);
         ClassDB::bind_method(D_METHOD("open_camera"), &ScannerCore::open_camera);
         ClassDB::bind_method(D_METHOD("get_frame"), &ScannerCore::get_frame);
         ClassDB::bind_method(D_METHOD("analyze_colors", "grid_rects"), &ScannerCore::analyze_colors);
@@ -15,10 +13,6 @@ namespace godot{
     ScannerCore::ScannerCore(){}
     ScannerCore::~ScannerCore(){
         if(cap.isOpened()) cap.release();
-    }
-
-    void ScannerCore::test_connection(){
-        UtilityFunctions::print("¡Hola desde C++! El puente GDExtension funciona.");
     }
 
     bool ScannerCore::open_camera(){

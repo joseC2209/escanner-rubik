@@ -84,6 +84,3 @@ func on_home_button_pressed() -> void:
 	if error != OK:
 		home_button.disabled = false
 		push_error("No se ha podido cargar el menú principal: " + error_string(error))
-
-func _process(delta: float) -> void:
-	pass

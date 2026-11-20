@@ -30,6 +30,3 @@ func _ready() -> void:
 func mostrar_error() -> void:
 	rueda.hide()
 	mensaje.text = "No se pudo iniciar la aplicación."
-
-func _process(delta: float) -> void:
-	pass

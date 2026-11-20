@@ -80,7 +80,3 @@ func get_grid_rects() -> Array:
 			rects.append(Rect2(x, y, square_size, square_size))
 			
 	return rects
-
-
-func _process(delta: float) -> void:
-	pass

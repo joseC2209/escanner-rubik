@@ -22,7 +22,6 @@ namespace godot{
         ScannerCore();
         ~ScannerCore();
 
-        void test_connection();
         bool open_camera();
         Ref<Image> get_frame();
 

@@ -2,11 +2,6 @@ extends Control
 
 var angulo := 0.0
 
-
-func _ready() -> void:
-	pass
-
-
 func _process(delta: float) -> void:
 	# Se actualiza el ángulo según el tiempo transcurrido y se limita a una vuelta
 	angulo = fposmod(angulo + TAU * delta, TAU)

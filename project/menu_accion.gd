@@ -51,10 +51,6 @@ func _update_layout() -> void:
 	
 	# Se aplica el mismo estilo a la opción de resolución
 	EstilosBotones.aplicar_estilo_azul(solution_button, base_size, true)
-	
-func _process(delta: float) -> void:
-	pass
-
 
 func _on_solucion_optima_pressed() -> void:
 	get_tree().change_scene_to_file("res://node_2d.tscn")

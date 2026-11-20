@@ -44,18 +44,14 @@ var solution_error: bool = false
 
 
 func _ready() -> void:
-	if Global.colores_cubo.size() == 6:
-		generar_colores_escaneados(Global.colores_cubo)
-	else:
-		# Fallback para abrir esta escena directamente durante las pruebas.
-		generar_colores_resueltos()
+	# Se vuelve al menú si no hay un escaneo y un resultado que mostrar
+	if Global.colores_cubo.size() != 6 or Global.solucion_actual.is_empty():
+		get_tree().call_deferred("change_scene_to_file", "res://menu_principal.tscn")
+		return
 	
-	# Se carga la solución real que el escáner ha dejado guardada en el Global
-	if Global.solucion_actual != "":
-		cargar_solucion(Global.solucion_actual)
-	else:
-		# Caso de prueba
-		cargar_solucion("U F2 R' U'")
+	# Se muestran los colores capturados y el resultado real del solucionador
+	generar_colores_escaneados(Global.colores_cubo)
+	cargar_solucion(Global.solucion_actual)
 	
 	# Se calcula el tamaño del cubo antes de ajustar el encuadre
 	cube_radius = _calculate_cube_radius()
@@ -394,31 +390,7 @@ func indice_izquierda(pos: Vector3) -> int:
 	if pos.z > 0 and pos.y > 0: return 1
 	if pos.z < 0: return 2
 	return 3
-
-# Se generan pegatinas resueltas si se abre esta escena sin pasar por el escaneo.
-func generar_colores_resueltos():
-	# Material para el plásico del cubo (gris muy oscuro, casi negro)
-	var mat_negro = StandardMaterial3D.new()
-	mat_negro.albedo_color = Color(0.1, 0.1, 0.1)
 	
-	for cubie in piezas_container.get_children():
-		cubie.material_override = mat_negro
-		var pos = cubie.position
-		
-		# Dependiendo de la posición tridimensional, se le pegan los colores
-		# Cara superior (Blanco)
-		if pos.y > 0: anadir_pegatina(cubie, Vector3(0, 0.476, 0), Vector3(-90, 0, 0), Color.WHITE)
-		# Cara inferior (Amarillo)
-		if pos.y < 0: anadir_pegatina(cubie, Vector3(0, -0.476, 0), Vector3(90, 0, 0), Color.YELLOW)
-		# Cara derecha (Rojo)
-		if pos.x > 0: anadir_pegatina(cubie, Vector3(0.476, 0, 0), Vector3(0, 90, 0), Color.RED)
-		# Cara izquieda (Naranja)
-		if pos.x < 0: anadir_pegatina(cubie, Vector3(-0.476, 0, 0), Vector3(0, -90, 0), Color.DARK_ORANGE)
-		# Cara frontal (Verde)
-		if pos.z > 0: anadir_pegatina(cubie, Vector3(0, 0, 0.476), Vector3(0, 0, 0), Color.GREEN)
-		# Cara trasera (Azul)
-		if pos.z < 0: anadir_pegatina(cubie, Vector3(0, 0, -0.476), Vector3(0, 180, 0), Color.BLUE)
-		
 # Instancia un QuadMesh para simular la pegatina
 func anadir_pegatina(padre: Node3D, pos_relativa: Vector3, rotacion_grados: Vector3, color: Color):
 	var pegatina = MeshInstance3D.new()
@@ -446,6 +418,3 @@ func _on_rescan_button_pressed() -> void:
 	if error != OK:
 		rescan_button.disabled = false
 		push_error("No se ha podido abrir el escáner: " + error_string(error))
-
-func _process(delta: float) -> void:
-	pass

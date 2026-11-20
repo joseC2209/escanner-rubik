@@ -45,7 +45,6 @@ func _ready() -> void:
 	# Se inicializa ScannerCore y se añade
 	scanner = ScannerCore.new()
 	add_child(scanner)
-	scanner.test_connection()
 
 	# Se crea el nodo que mostrará el vídeo de la cámara.
 	camera_sprite = Sprite2D.new()
