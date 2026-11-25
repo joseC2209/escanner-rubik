@@ -31,8 +31,14 @@ namespace godot{
         // Para Android (recibe la imagen de Godot)
         Array analyze_colors_from_image(Ref<Image> image, Array grid_rects);
 
+        // Extrae una muestra RGB por región mediante la mediana de sus canales
+        Array sample_colors_from_image(Ref<Image> image, Array grid_rects);
+
     private:
         cv::Mat current_frame;
+
+        // Se obtiene la mediana de cada canal de una regiónde imagen de tres canales
+        cv::Vec3b median_color(const cv::Mat &roi) const;
 };
 
 }

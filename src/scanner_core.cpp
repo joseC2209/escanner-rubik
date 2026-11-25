@@ -1,5 +1,8 @@
 #include "scanner_core.h"
 #include <godot_cpp/core/class_db.hpp>
+#include <algorithm>
+#include <vector>
+#include <godot_cpp/variant/color.hpp>
 
 namespace godot{
 
@@ -8,11 +11,47 @@ namespace godot{
         ClassDB::bind_method(D_METHOD("get_frame"), &ScannerCore::get_frame);
         ClassDB::bind_method(D_METHOD("analyze_colors", "grid_rects"), &ScannerCore::analyze_colors);
         ClassDB::bind_method(D_METHOD("analyze_colors_from_image", "image", "grid_rects"), &ScannerCore::analyze_colors_from_image);
+        ClassDB::bind_method(D_METHOD("sample_colors_from_image", "image", "grid_rects"), &ScannerCore::sample_colors_from_image);
     }
 
     ScannerCore::ScannerCore(){}
     ScannerCore::~ScannerCore(){
         if(cap.isOpened()) cap.release();
+    }
+
+    cv::Vec3b ScannerCore::median_color(const cv::Mat &roi) const{
+        // La región debe contener píxeles de tres canales de 8 bits
+        CV_Assert(!roi.empty() && roi.type() == CV_8UC3);
+
+        cv::Vec3b resultado;
+
+        for(int canal = 0; canal < 3; ++canal){
+            std::vector<uint8_t> valores;
+            valores.reserve(roi.total());
+
+            // Se recogen los valores del canal, respetando las filas de la región
+            for(int fila = 0; fila < roi.rows; ++fila){
+                const cv::Vec3b *pixeles = roi.ptr<cv::Vec3b>(fila);
+                for(int columna = 0; columna < roi.cols; ++columna){
+                    valores.push_back(pixeles[columna][canal]);
+                }
+            }
+
+            // Se coloca el valor central sin ordenar todo el vector
+            auto centro = valores.begin() + valores.size()/2;
+            std::nth_element(valores.begin(), centro, valores.end());
+
+            int mediana = *centro;
+            if(valores.size() % 2 == 0){
+                // Con una cantidad par se promedian los dos valores centrales
+                int anterior = *std::max_element(valores.begin(), centro);
+                mediana = (anterior + mediana)/2;
+            }
+
+            resultado[canal] = static_cast<uint8_t>(mediana);
+        }
+
+        return resultado;
     }
 
     bool ScannerCore::open_camera(){
@@ -119,6 +158,38 @@ namespace godot{
         }
 
         return result_colors;
+    }
+
+    Array ScannerCore::sample_colors_from_image(Ref<Image> image, Array grid_rects){
+        Array muestras;
+
+        if(image.is_null() || image->is_empty()){
+            return muestras;
+        }
+
+        // Se trabaja sobre una copia RGB para conservar la imagen recibida
+        Ref<Image> imagen_rgb = image->duplicate();
+        imagen_rgb->convert(Image::FORMAT_RGB8);
+
+        PackedByteArray datos = imagen_rgb->get_data();
+        cv::Mat frame(imagen_rgb->get_height(), imagen_rgb->get_width(), CV_8UC3, datos.ptrw());
+
+        for(int i = 0; i < grid_rects.size(); ++i){
+            Rect2 rectangulo = grid_rects[i];
+            cv::Rect region(rectangulo.position.x, rectangulo.position.y, rectangulo.size.x, rectangulo.size.y);
+
+            // Se limita la región a los píxeles disponibles
+            region &= cv::Rect(0, 0, frame.cols, frame.rows);
+            if(region.empty()){
+                return Array();
+            }
+
+            // Los canales están en orden RGB y se normalizan al intervalo 0-1
+            cv::Vec3b mediana = median_color(frame(region));
+            muestras.push_back(Color(mediana[0]/255.0f, mediana[1]/255.0f, mediana[2]/255.0f));
+        }
+
+        return muestras;
     }
 
     Array ScannerCore::analyze_colors_from_image(Ref<Image> image, Array grid_rects){
