@@ -67,7 +67,7 @@ jobs:
 
           "GODOT_EXE=$($godot.FullName)" >> $env:GITHUB_ENV
 
-      - name: Ejecutar las pruebas del solucionador
+      - name: Ejecutar las pruebas del solucionador y las muestras
         shell: pwsh
         run: |
           $proyecto = Join-Path $env:GITHUB_WORKSPACE 'project'
@@ -84,7 +84,14 @@ jobs:
           Write-Host "Codigo de las pruebas: $codigoPruebas"
 
           if ($codigoPruebas -ne 0) { exit $codigoPruebas }
-                    if ($codigoImportacion -eq -1073741819) {
+          & $env:GODOT_EXE --headless --path $proyecto `
+            --script 'res://tests/test_scanner_samples.gd'
+          $codigoMuestras = $LASTEXITCODE
+          Write-Host "Codigo de las pruebas de muestras: $codigoMuestras"
+
+          if ($codigoMuestras -ne 0) { exit $codigoMuestras }
+          
+          if ($codigoImportacion -eq -1073741819) {
             Write-Warning "Godot cerro la importacion con 0xC0000005. Las pruebas del solucionador pasaron."
             exit 0
           }
